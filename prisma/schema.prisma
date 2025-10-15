@@ -1,0 +1,320 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  avatar      String?
+  bio         String?
+  skills      String?  // JSON string of skills array
+  level       Int      @default(1) // User level 1-100
+  points      Int      @default(0) // Experience points
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  hackathons  HackathonParticipant[]
+  events      EventParticipant[]
+  ideas       Idea[]
+  sessions    SessionParticipant[]
+  achievements UserAchievement[]
+  teamMemberships TeamMember[]
+
+  @@map("users")
+}
+
+model Hackathon {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  theme       String
+  prize       String?
+  maxParticipants Int?
+  startDate   DateTime
+  endDate     DateTime
+  status      HackathonStatus @default(UPCOMING)
+  imageUrl    String?
+  tags        String?  // JSON string of tags array
+  difficulty  Difficulty @default(BEGINNER)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  participants HackathonParticipant[]
+  projects     Project[]
+
+  @@map("hackathons")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  repository  String?
+  demoUrl     String?
+  imageUrl    String?
+  techStack   String?  // JSON string of technologies array
+  hackathonId String
+  teamId      String?
+  isWinner    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  hackathon   Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  team        Team?    @relation(fields: [teamId], references: [id])
+  votes       Vote[]
+
+  @@map("projects")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  maxMembers  Int      @default(4)
+  hackathonId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  members     TeamMember[]
+  projects    Project[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id     String @id @default(cuid())
+  teamId String
+  userId String
+  role   TeamRole @default(MEMBER)
+
+  // Relations
+  team   Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model HackathonParticipant {
+  id           String   @id @default(cuid())
+  hackathonId  String
+  userId       String
+  registeredAt DateTime @default(now())
+
+  // Relations
+  hackathon    Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([hackathonId, userId])
+  @@map("hackathon_participants")
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  type        EventType
+  date        DateTime
+  duration    Int      // Duration in minutes
+  location    String?
+  isOnline    Boolean  @default(false)
+  maxAttendees Int?
+  imageUrl    String?
+  tags        String?  // JSON string of tags array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  participants EventParticipant[]
+
+  @@map("events")
+}
+
+model EventParticipant {
+  id          String   @id @default(cuid())
+  eventId     String
+  userId      String
+  registeredAt DateTime @default(now())
+
+  // Relations
+  event       Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user        User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@map("event_participants")
+}
+
+model Session {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  content     String   // Rich text content
+  type        SessionType
+  difficulty  Difficulty @default(BEGINNER)
+  duration    Int      // Duration in minutes
+  instructor  String
+  videoUrl    String?
+  materials   String?  // JSON string of resource URLs array
+  tags        String?  // JSON string of tags array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  participants SessionParticipant[]
+
+  @@map("sessions")
+}
+
+model SessionParticipant {
+  id           String   @id @default(cuid())
+  sessionId    String
+  userId       String
+  progress     Float    @default(0) // Progress 0-100
+  completed    Boolean  @default(false)
+  startedAt    DateTime @default(now())
+  completedAt  DateTime?
+
+  // Relations
+  session      Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@map("session_participants")
+}
+
+model Idea {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String
+  tags        String?  // JSON string of tags array
+  status      IdeaStatus @default(DRAFT)
+  votes       Int      @default(0)
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author      User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+
+  @@map("ideas")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  ideaId    String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  idea      Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  // Relations
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("votes")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  icon        String
+  points      Int
+  condition   String   // JSON string of unlock conditions
+  createdAt   DateTime @default(now())
+
+  // Relations
+  users       UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  // Relations
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@map("user_achievements")
+}
+
+// Enums
+enum HackathonStatus {
+  UPCOMING
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum EventType {
+  WORKSHOP
+  SEMINAR
+  NETWORKING
+  COMPETITION
+  SOCIAL
+}
+
+enum SessionType {
+  VIDEO
+  WORKSHOP
+  TUTORIAL
+  READING
+  QUIZ
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum TeamRole {
+  LEADER
+  MEMBER
+}
+
+enum IdeaStatus {
+  DRAFT
+  PUBLISHED
+  UNDER_REVIEW
+  APPROVED
+  IMPLEMENTED
+}
