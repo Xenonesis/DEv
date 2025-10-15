@@ -3,7 +3,7 @@ import type {
   User, 
   Hackathon, 
   Event, 
-  Session, 
+  LearningSession, 
   Idea, 
   Achievement,
   HackathonStatus,
@@ -42,7 +42,7 @@ export const getUserById = async (id: string) => {
           event: true
         }
       },
-      sessions: {
+      learningSessions: {
         include: {
           session: true
         }
@@ -140,6 +140,26 @@ export const getAllHackathons = async (filters?: {
     ...hackathon,
     tags: parseJSON<string[]>(hackathon.tags)
   }))
+}
+
+export const createHackathon = async (hackathonData: {
+  title: string
+  description: string
+  theme: string
+  prize?: string
+  maxParticipants?: number
+  startDate: Date
+  endDate: Date
+  difficulty: Difficulty
+  imageUrl?: string
+  tags?: string[]
+}) => {
+  return await db.hackathon.create({
+    data: {
+      ...hackathonData,
+      tags: hackathonData.tags ? stringifyJSON(hackathonData.tags) : null
+    }
+  })
 }
 
 export const getHackathonById = async (id: string) => {
@@ -303,7 +323,7 @@ export const getAllSessions = async (filters?: {
     ]
   }
 
-  const sessions = await db.session.findMany({
+  const sessions = await db.learningSession.findMany({
     where,
     include: {
       _count: {
@@ -324,8 +344,49 @@ export const getAllSessions = async (filters?: {
   }))
 }
 
+export const createSession = async (sessionData: {
+  title: string
+  description: string
+  content: string
+  type: SessionType
+  difficulty: Difficulty
+  duration: number
+  instructor: string
+  videoUrl?: string
+  materials?: string[]
+  tags?: string[]
+}) => {
+  return await db.learningSession.create({
+    data: {
+      ...sessionData,
+      materials: sessionData.materials ? stringifyJSON(sessionData.materials) : null,
+      tags: sessionData.tags ? stringifyJSON(sessionData.tags) : null
+    }
+  })
+}
+
+export const createEvent = async (eventData: {
+  title: string
+  description: string
+  type: EventType
+  date: Date
+  duration: number
+  location?: string
+  isOnline: boolean
+  maxAttendees?: number
+  imageUrl?: string
+  tags?: string[]
+}) => {
+  return await db.event.create({
+    data: {
+      ...eventData,
+      tags: eventData.tags ? stringifyJSON(eventData.tags) : null
+    }
+  })
+}
+
 export const getSessionById = async (id: string) => {
-  const session = await db.session.findUnique({
+  const session = await db.learningSession.findUnique({
     where: { id },
     include: {
       participants: {

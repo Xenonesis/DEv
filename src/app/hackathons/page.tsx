@@ -33,6 +33,23 @@ interface Hackathon {
   featured?: boolean;
 }
 
+// Using real API data instead of mock data
+const fetchHackathons = async (filters: any = {}) => {
+  try {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) params.append(key, filters[key]);
+    });
+    
+    const response = await fetch(`/api/hackathons?${params}`);
+    const data = await response.json();
+    return data.success ? data.data : [];
+  } catch (error) {
+    console.error('Error fetching hackathons:', error);
+    return [];
+  }
+};
+
 const mockHackathons: Hackathon[] = [
   {
     id: '1',
@@ -164,11 +181,28 @@ export default function HackathonsPage() {
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [selectedMode, setSelectedMode] = useState('all');
   const [sortBy, setSortBy] = useState('date');
-  const [hackathons, setHackathons] = useState<Hackathon[]>(mockHackathons);
+  const [hackathons, setHackathons] = useState<Hackathon[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isVisible, setIsVisible] = useState({});
   const heroRef = useRef(null);
   const statsRef = useRef(null);
   const filtersRef = useRef(null);
+
+  // Load hackathons data
+  useEffect(() => {
+    const loadHackathons = async () => {
+      setLoading(true);
+      const data = await fetchHackathons({
+        search: searchTerm,
+        difficulty: selectedDifficulty !== 'all' ? selectedDifficulty : undefined,
+        sort: sortBy
+      });
+      setHackathons(data);
+      setLoading(false);
+    };
+
+    loadHackathons();
+  }, [searchTerm, selectedDifficulty, sortBy]);
 
   // Intersection Observer for scroll animations
   useEffect(() => {

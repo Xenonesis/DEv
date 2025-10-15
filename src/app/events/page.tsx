@@ -34,6 +34,23 @@ interface Event {
   featured: boolean;
 }
 
+// Using real API data instead of mock data
+const fetchEvents = async (filters: any = {}) => {
+  try {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) params.append(key, filters[key]);
+    });
+    
+    const response = await fetch(`/api/events?${params}`);
+    const data = await response.json();
+    return data.success ? data.data : [];
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    return [];
+  }
+};
+
 const mockEvents: Event[] = [
   {
     id: '1',
@@ -176,12 +193,29 @@ export default function EventsPage() {
   const [selectedMode, setSelectedMode] = useState('all');
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [sortBy, setSortBy] = useState('date');
-  const [events, setEvents] = useState<Event[]>(mockEvents);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isVisible, setIsVisible] = useState({});
   const heroRef = useRef(null);
   const statsRef = useRef(null);
   const filtersRef = useRef(null);
+
+  // Load events data
+  useEffect(() => {
+    const loadEvents = async () => {
+      setLoading(true);
+      const data = await fetchEvents({
+        search: searchTerm,
+        type: selectedType !== 'all' ? selectedType : undefined,
+        sort: sortBy
+      });
+      setEvents(data);
+      setLoading(false);
+    };
+
+    loadEvents();
+  }, [searchTerm, selectedType, sortBy]);
 
   // Intersection Observer for scroll animations
   useEffect(() => {

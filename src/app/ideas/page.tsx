@@ -29,6 +29,23 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ThemeToggle } from '@/components/theme-toggle';
 
+// Using real API data instead of mock data
+const fetchIdeas = async (filters: any = {}) => {
+  try {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) params.append(key, filters[key]);
+    });
+    
+    const response = await fetch(`/api/ideas?${params}`);
+    const data = await response.json();
+    return data.success ? data.data : [];
+  } catch (error) {
+    console.error('Error fetching ideas:', error);
+    return [];
+  }
+};
+
 const ideas = [
   {
     id: 1,
@@ -155,13 +172,28 @@ const trendingTopics = [
 export default function IdeasPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+  const [ideasData, setIdeasData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredIdeas = ideas.filter(idea => {
-    const categoryMatch = selectedCategory === 'all' || 
-      idea.category.toLowerCase().includes(selectedCategory.toLowerCase());
+  // Load ideas data
+  useEffect(() => {
+    const loadIdeas = async () => {
+      setLoading(true);
+      const data = await fetchIdeas({
+        category: selectedCategory !== 'all' ? selectedCategory : undefined,
+        sort: 'votes'
+      });
+      setIdeasData(data);
+      setLoading(false);
+    };
+
+    loadIdeas();
+  }, [selectedCategory]);
+
+  const filteredIdeas = ideasData.filter(idea => {
     const difficultyMatch = selectedDifficulty === 'all' || 
-      idea.difficulty.toLowerCase() === selectedDifficulty.toLowerCase();
-    return categoryMatch && difficultyMatch;
+      (idea.difficulty && idea.difficulty.toLowerCase() === selectedDifficulty.toLowerCase());
+    return difficultyMatch;
   });
 
   return (

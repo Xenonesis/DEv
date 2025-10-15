@@ -15,27 +15,72 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  name        String?
-  avatar      String?
-  bio         String?
-  skills      String?  // JSON string of skills array
-  level       Int      @default(1) // User level 1-100
-  points      Int      @default(0) // Experience points
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  avatar        String?
+  bio           String?
+  skills        String?  // JSON string of skills array
+  level         Int      @default(1) // User level 1-100
+  points        Int      @default(0) // Experience points
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  // Relations
-  hackathons  HackathonParticipant[]
-  events      EventParticipant[]
-  ideas       Idea[]
-  sessions    SessionParticipant[]
-  achievements UserAchievement[]
-  teamMemberships TeamMember[]
+  // NextAuth relations
+  accounts Account[]
+  sessions Session[]
+
+  // App relations
+  hackathons       HackathonParticipant[]
+  events           EventParticipant[]
+  ideas            Idea[]
+  learningSessions SessionParticipant[]
+  achievements     UserAchievement[]
+  teamMemberships  TeamMember[]
 
   @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
 }
 
 model Hackathon {
@@ -162,7 +207,7 @@ model EventParticipant {
   @@map("event_participants")
 }
 
-model Session {
+model LearningSession {
   id          String   @id @default(cuid())
   title       String
   description String
@@ -180,7 +225,7 @@ model Session {
   // Relations
   participants SessionParticipant[]
 
-  @@map("sessions")
+  @@map("learning_sessions")
 }
 
 model SessionParticipant {
@@ -193,8 +238,8 @@ model SessionParticipant {
   completedAt  DateTime?
 
   // Relations
-  session      Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session      LearningSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([sessionId, userId])
   @@map("session_participants")

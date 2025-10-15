@@ -44,6 +44,23 @@ interface Session {
   imageUrl?: string;
 }
 
+// Using real API data instead of mock data
+const fetchSessions = async (filters: any = {}) => {
+  try {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) params.append(key, filters[key]);
+    });
+    
+    const response = await fetch(`/api/sessions?${params}`);
+    const data = await response.json();
+    return data.success ? data.data : [];
+  } catch (error) {
+    console.error('Error fetching sessions:', error);
+    return [];
+  }
+};
+
 const mockSessions: Session[] = [
   {
     id: '1',
@@ -277,13 +294,31 @@ export default function SessionsPage() {
   const [selectedFormat, setSelectedFormat] = useState('all');
   const [selectedPrice, setSelectedPrice] = useState('all');
   const [sortBy, setSortBy] = useState('rating');
-  const [sessions, setSessions] = useState<Session[]>(mockSessions);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const categories = ['all', 'Frontend Development', 'Artificial Intelligence', 'Cloud Computing', 'Design', 'Data Science', 'DevOps'];
   const levels = ['all', 'beginner', 'intermediate', 'advanced'];
   const types = ['all', 'workshop', 'training', 'tutorial', 'course'];
   const formats = ['all', 'live', 'self-paced', 'hybrid'];
   const priceRanges = ['all', 'free', 'paid', 'premium'];
+
+  // Load sessions data
+  useEffect(() => {
+    const loadSessions = async () => {
+      setLoading(true);
+      const data = await fetchSessions({
+        search: searchTerm,
+        difficulty: selectedLevel !== 'all' ? selectedLevel : undefined,
+        type: selectedType !== 'all' ? selectedType : undefined,
+        sort: sortBy
+      });
+      setSessions(data);
+      setLoading(false);
+    };
+
+    loadSessions();
+  }, [searchTerm, selectedLevel, selectedType, sortBy]);
 
   useEffect(() => {
     let filtered = mockSessions.filter(session => {
