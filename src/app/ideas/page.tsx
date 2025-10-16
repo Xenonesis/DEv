@@ -1,18 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { 
-  Lightbulb, 
-  Rocket, 
-  Target, 
-  TrendingUp, 
-  Brain, 
-  Globe, 
-  Users, 
-  Zap, 
-  Shield, 
-  Database, 
-  Smartphone, 
+import { useState, useEffect } from 'react';
+import {
+  Lightbulb,
+  Rocket,
+  Target,
+  TrendingUp,
+  Brain,
+  Globe,
+  Users,
+  Zap,
+  Shield,
+  Database,
+  Smartphone,
   Cloud,
   ArrowRight,
   Star,
@@ -36,7 +36,7 @@ const fetchIdeas = async (filters: any = {}) => {
     Object.keys(filters).forEach(key => {
       if (filters[key]) params.append(key, filters[key]);
     });
-    
+
     const response = await fetch(`/api/ideas?${params}`);
     const data = await response.json();
     return data.success ? data.data : [];
@@ -191,7 +191,7 @@ export default function IdeasPage() {
   }, [selectedCategory]);
 
   const filteredIdeas = ideasData.filter(idea => {
-    const difficultyMatch = selectedDifficulty === 'all' || 
+    const difficultyMatch = selectedDifficulty === 'all' ||
       (idea.difficulty && idea.difficulty.toLowerCase() === selectedDifficulty.toLowerCase());
     return difficultyMatch;
   });
@@ -365,13 +365,13 @@ export default function IdeasPage() {
                         </h3>
                       </div>
                     </div>
-                    
+
                     <CardHeader className="pb-3">
                       <CardDescription className="text-base line-clamp-3">
                         {idea.description}
                       </CardDescription>
                     </CardHeader>
-                    
+
                     <CardContent className="space-y-4">
                       <div className="flex flex-wrap gap-2">
                         {idea.tags.map((tag) => (
