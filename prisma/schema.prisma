@@ -26,6 +26,8 @@ model User {
   level         Int      @default(1) // User level 1-100
   points        Int      @default(0) // Experience points
   isActive      Boolean  @default(true)
+  role          UserRole @default(USER)
+  isHostApproved Boolean @default(false) // Whether user is approved as host
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -362,4 +364,10 @@ enum IdeaStatus {
   UNDER_REVIEW
   APPROVED
   IMPLEMENTED
+}
+
+enum UserRole {
+  USER
+  HOST
+  ADMIN
 }

@@ -8,8 +8,10 @@ async function main() {
 
   // Create sample users
   const users = await Promise.all([
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'alex.chen@neofest.com' },
+      update: {},
+      create: {
         email: 'alex.chen@neofest.com',
         name: 'Alex Chen',
         bio: 'Full-stack developer passionate about AI and web technologies',
@@ -19,8 +21,10 @@ async function main() {
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=alex'
       }
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'sarah.kim@neofest.com' },
+      update: {},
+      create: {
         email: 'sarah.kim@neofest.com',
         name: 'Sarah Kim',
         bio: 'UX/UI designer focused on creating intuitive digital experiences',
@@ -30,8 +34,10 @@ async function main() {
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=sarah'
       }
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'mike.johnson@neofest.com' },
+      update: {},
+      create: {
         email: 'mike.johnson@neofest.com',
         name: 'Mike Johnson',
         bio: 'DevOps engineer with expertise in cloud infrastructure',
@@ -41,8 +47,10 @@ async function main() {
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=mike'
       }
     }),
-    prisma.user.create({
-      data: {
+    prisma.user.upsert({
+      where: { email: 'emma.wilson@neofest.com' },
+      update: {},
+      create: {
         email: 'emma.wilson@neofest.com',
         name: 'Emma Wilson',
         bio: 'Data scientist specializing in predictive analytics',
@@ -157,7 +165,7 @@ async function main() {
 
   // Create learning sessions
   const sessions = await Promise.all([
-    prisma.session.create({
+    prisma.learningSession.create({
       data: {
         title: 'Introduction to TypeScript',
         description: 'Master the fundamentals of TypeScript programming',
@@ -171,7 +179,7 @@ async function main() {
         tags: JSON.stringify(['TypeScript', 'JavaScript', 'Programming', 'Beginner'])
       }
     }),
-    prisma.session.create({
+    prisma.learningSession.create({
       data: {
         title: 'Advanced React Hooks',
         description: 'Deep dive into custom hooks and advanced patterns',
@@ -185,7 +193,7 @@ async function main() {
         tags: JSON.stringify(['React', 'Hooks', 'Advanced', 'Workshop'])
       }
     }),
-    prisma.session.create({
+    prisma.learningSession.create({
       data: {
         title: 'Cloud Architecture Fundamentals',
         description: 'Understanding cloud computing and architecture patterns',

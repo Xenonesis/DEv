@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import Navbar from '@/components/Navbar';
+import { HostApplication } from '@/components/host-application';
 
 interface DashboardStats {
   totalParticipations: number;
@@ -570,6 +571,9 @@ export default function DashboardPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Host Application */}
+              <HostApplication />
             </TabsContent>
 
             <TabsContent value="activities" className="space-y-6">
