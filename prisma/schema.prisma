@@ -36,9 +36,11 @@ model User {
   sessions Session[]
 
   // App relations
+  hostedHackathons Hackathon[]          @relation("HostedHackathons")
   hackathons       HackathonParticipant[]
   events           EventParticipant[]
   ideas            Idea[]
+  comments         Comment[]            @relation("CommentAuthor")
   learningSessions SessionParticipant[]
   achievements     UserAchievement[]
   teamMemberships  TeamMember[]
@@ -98,10 +100,12 @@ model Hackathon {
   imageUrl    String?
   tags        String?  // JSON string of tags array
   difficulty  Difficulty @default(BEGINNER)
+  hostId      String   // Host who created the hackathon
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
+  host         User     @relation("HostedHackathons", fields: [hostId], references: [id], onDelete: Cascade)
   participants HackathonParticipant[]
   projects     Project[]
 
@@ -276,6 +280,7 @@ model Comment {
 
   // Relations
   idea      Idea @relation(fields: [ideaId], references: [id], onDelete: Cascade)
+  author    User @relation("CommentAuthor", fields: [authorId], references: [id], onDelete: Cascade)
 
   @@map("comments")
 }

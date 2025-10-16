@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { HackathonStatus, EventType, SessionType, Difficulty, TeamRole, IdeaStatus } from '@prisma/client'
+import { HackathonStatus, EventType, SessionType, Difficulty, TeamRole, IdeaStatus, UserRole } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -64,56 +64,11 @@ async function main() {
 
   console.log('✅ Created users')
 
-  // Create hackathons
-  const hackathons = await Promise.all([
-    prisma.hackathon.create({
-      data: {
-        title: 'AI Innovation Challenge 2024',
-        description: 'Build innovative AI solutions to solve real-world problems',
-        theme: 'Artificial Intelligence',
-        prize: '$10,000 + Tech Package',
-        maxParticipants: 100,
-        startDate: new Date('2024-03-15T09:00:00Z'),
-        endDate: new Date('2024-03-17T18:00:00Z'),
-        status: HackathonStatus.UPCOMING,
-        imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop',
-        tags: JSON.stringify(['AI', 'Machine Learning', 'Innovation', 'Competition']),
-        difficulty: Difficulty.INTERMEDIATE
-      }
-    }),
-    prisma.hackathon.create({
-      data: {
-        title: 'Web3 & Blockchain Hackathon',
-        description: 'Create decentralized applications for the future of web',
-        theme: 'Blockchain Technology',
-        prize: '$15,000 + Investment Opportunity',
-        maxParticipants: 80,
-        startDate: new Date('2024-04-01T10:00:00Z'),
-        endDate: new Date('2024-04-03T20:00:00Z'),
-        status: HackathonStatus.UPCOMING,
-        imageUrl: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=400&fit=crop',
-        tags: JSON.stringify(['Blockchain', 'Web3', 'DeFi', 'Smart Contracts']),
-        difficulty: Difficulty.ADVANCED
-      }
-    }),
-    prisma.hackathon.create({
-      data: {
-        title: 'Sustainability Tech Challenge',
-        description: 'Develop technology solutions for environmental sustainability',
-        theme: 'Green Technology',
-        prize: '$8,000 + Mentorship Program',
-        maxParticipants: 60,
-        startDate: new Date('2024-02-20T09:00:00Z'),
-        endDate: new Date('2024-02-22T17:00:00Z'),
-        status: HackathonStatus.ONGOING,
-        imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&h=400&fit=crop',
-        tags: JSON.stringify(['Sustainability', 'Green Tech', 'Environment', 'IoT']),
-        difficulty: Difficulty.BEGINNER
-      }
-    })
-  ])
+  // No mock hackathons - hosts will create them dynamically
 
-  console.log('✅ Created hackathons')
+  const hackathons: any[] = []
+
+  console.log('✅ Skipped mock hackathons (hosts will create them)')
 
   // Create events
   const events = await Promise.all([
@@ -322,35 +277,8 @@ async function main() {
 
   console.log('✅ Created user achievements')
 
-  // Register users for hackathons
-  await Promise.all([
-    prisma.hackathonParticipant.create({
-      data: {
-        hackathonId: hackathons[0].id,
-        userId: users[0].id
-      }
-    }),
-    prisma.hackathonParticipant.create({
-      data: {
-        hackathonId: hackathons[0].id,
-        userId: users[1].id
-      }
-    }),
-    prisma.hackathonParticipant.create({
-      data: {
-        hackathonId: hackathons[2].id,
-        userId: users[2].id
-      }
-    }),
-    prisma.hackathonParticipant.create({
-      data: {
-        hackathonId: hackathons[2].id,
-        userId: users[3].id
-      }
-    })
-  ])
-
-  console.log('✅ Registered users for hackathons')
+  // No hackathon participants since there are no mock hackathons
+  console.log('✅ Skipped hackathon participants')
 
   // Register users for events
   await Promise.all([
@@ -417,7 +345,7 @@ async function main() {
   console.log(`
   📊 Summary:
   - Users: ${users.length}
-  - Hackathons: ${hackathons.length}
+  - Hackathons: 0 (hosts will create them)
   - Events: ${events.length}
   - Sessions: ${sessions.length}
   - Ideas: ${ideas.length}

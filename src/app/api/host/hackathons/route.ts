@@ -21,9 +21,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Host access required' }, { status: 403 });
     }
 
-    // Get hackathons created by this host (for now, we'll get all hackathons)
-    // In a real implementation, you'd add a hostId field to the Hackathon model
+    // Get hackathons created by this host
     const hackathons = await db.hackathon.findMany({
+      where: { hostId: user.id },
       include: {
         participants: true,
         _count: {
@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
         endDate: new Date(endDate),
         difficulty,
         tags: JSON.stringify(tags || []),
-        status: 'UPCOMING'
+        status: 'UPCOMING',
+        hostId: user.id
       }
     });
 

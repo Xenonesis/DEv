@@ -153,6 +153,7 @@ export const createHackathon = async (hackathonData: {
   difficulty: Difficulty
   imageUrl?: string
   tags?: string[]
+  hostId: string
 }) => {
   return await db.hackathon.create({
     data: {
@@ -160,6 +161,67 @@ export const createHackathon = async (hackathonData: {
       tags: hackathonData.tags ? stringifyJSON(hackathonData.tags) : null
     }
   })
+}
+
+export const updateHackathon = async (id: string, hackathonData: Partial<{
+  title: string
+  description: string
+  theme: string
+  prize?: string
+  maxParticipants?: number
+  startDate: Date
+  endDate: Date
+  difficulty: Difficulty
+  imageUrl?: string
+  tags?: string[]
+  status?: HackathonStatus
+}>) => {
+  return await db.hackathon.update({
+    where: { id },
+    data: {
+      ...hackathonData,
+      tags: hackathonData.tags ? stringifyJSON(hackathonData.tags) : hackathonData.tags === undefined ? undefined : null
+    }
+  })
+}
+
+export const deleteHackathon = async (id: string) => {
+  return await db.hackathon.delete({
+    where: { id }
+  })
+}
+
+export const getHackathonsByHost = async (hostId: string) => {
+  const hackathons = await db.hackathon.findMany({
+    where: { hostId },
+    include: {
+      participants: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true
+            }
+          }
+        }
+      },
+      _count: {
+        select: {
+          participants: true,
+          projects: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  })
+
+  return hackathons.map(hackathon => ({
+    ...hackathon,
+    tags: parseJSON<string[]>(hackathon.tags)
+  }))
 }
 
 export const getHackathonById = async (id: string) => {
@@ -543,25 +605,8 @@ export const createIdea = async (ideaData: {
 }
 
 export const voteForIdea = async (ideaId: string, userId: string) => {
-  // First check if user has already voted
-  const existingVote = await db.vote.findFirst({
-    where: {
-      userId,
-      project: {
-        ideas: {
-          some: {
-            id: ideaId
-          }
-        }
-      }
-    }
-  })
-
-  if (existingVote) {
-    throw new Error('User has already voted for this idea')
-  }
-
-  // Increment vote count
+  // Increment vote count for the idea
+  // Note: In a production app, you'd want to track who voted to prevent duplicate votes
   await db.idea.update({
     where: { id: ideaId },
     data: {

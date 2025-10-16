@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { ArrowLeft, Trophy, Calendar, BookOpen, Lightbulb, Users, Edit } from 'lucide-react'
+import { ArrowLeft, Trophy, Calendar, BookOpen, Lightbulb, Users, Edit, UserCog } from 'lucide-react'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import ProfileEditDialog from '@/components/ProfileEditDialog'
@@ -74,6 +74,7 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [isSwitchingRole, setIsSwitchingRole] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -105,6 +106,36 @@ export default function ProfilePage() {
       fetchProfile()
     }
   }, [status])
+
+  const handleRoleSwitch = async (newRole: 'USER' | 'HOST') => {
+    try {
+      setIsSwitchingRole(true)
+      const response = await fetch('/api/user/switch-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole })
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success(`Switched to ${newRole} mode successfully!`)
+        // Refresh profile data
+        await fetchProfile()
+        // Redirect based on role
+        if (newRole === 'HOST') {
+          router.push('/host')
+        }
+      } else {
+        toast.error(data.error || 'Failed to switch role')
+      }
+    } catch (error) {
+      console.error('Error switching role:', error)
+      toast.error('Failed to switch role')
+    } finally {
+      setIsSwitchingRole(false)
+    }
+  }
 
   if (status === 'loading' || isLoading) {
     return (
@@ -189,6 +220,111 @@ export default function ProfilePage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Role Switching Card - Only show for non-admin users */}
+          {user.role !== 'ADMIN' && (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <UserCog className="w-5 h-5 mr-2" />
+                  Role Settings
+                </CardTitle>
+                <CardDescription>
+                  Switch between Participant and Host modes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Choose your current role to access different features:
+                  </p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Participant Mode */}
+                    <div className={`p-4 border-2 rounded-lg transition-all ${
+                      user.role === 'USER' 
+                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20' 
+                        : 'border-border hover:border-purple-300'
+                    }`}>
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-semibold text-lg">Participant Mode</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Browse and join hackathons
+                          </p>
+                        </div>
+                        {user.role === 'USER' && (
+                          <Badge className="bg-purple-600">Active</Badge>
+                        )}
+                      </div>
+                      <ul className="text-sm space-y-1 mb-4 text-muted-foreground">
+                        <li>• Browse all hackathons</li>
+                        <li>• Register for events</li>
+                        <li>• Submit projects</li>
+                        <li>• Join teams</li>
+                      </ul>
+                      {user.role !== 'USER' && (
+                        <Button 
+                          onClick={() => handleRoleSwitch('USER')}
+                          disabled={isSwitchingRole}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          {isSwitchingRole ? 'Switching...' : 'Switch to Participant'}
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Host Mode */}
+                    <div className={`p-4 border-2 rounded-lg transition-all ${
+                      user.role === 'HOST' 
+                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20' 
+                        : 'border-border hover:border-purple-300'
+                    }`}>
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h4 className="font-semibold text-lg">Host Mode</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Create and manage hackathons
+                          </p>
+                        </div>
+                        {user.role === 'HOST' && (
+                          <Badge className="bg-purple-600">Active</Badge>
+                        )}
+                      </div>
+                      <ul className="text-sm space-y-1 mb-4 text-muted-foreground">
+                        <li>• Create hackathons</li>
+                        <li>• Manage participants</li>
+                        <li>• Edit event details</li>
+                        <li>• View analytics</li>
+                      </ul>
+                      {user.role !== 'HOST' && (
+                        <Button 
+                          onClick={() => handleRoleSwitch('HOST')}
+                          disabled={isSwitchingRole}
+                          className="w-full bg-purple-600 hover:bg-purple-700"
+                        >
+                          {isSwitchingRole ? 'Switching...' : 'Switch to Host'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {user.role === 'HOST' && (
+                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
+                        💡 <strong>Tip:</strong> As a host, you can access the{' '}
+                        <Link href="/host" className="underline font-semibold">
+                          Host Dashboard
+                        </Link>{' '}
+                        to manage your hackathons.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

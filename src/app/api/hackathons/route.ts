@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllHackathons, createHackathon, parseJSON } from '@/lib/db-utils';
-import { HackathonStatus, Difficulty } from '@prisma/client';
+import { HackathonStatus, Difficulty, UserRole } from '@prisma/client';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 export async function GET(request: NextRequest) {
   try {
@@ -85,6 +87,26 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Check if user is a host
+    const { getUserByEmail } = await import('@/lib/db-utils');
+    const user = await getUserByEmail(session.user.email);
+    
+    if (!user || (user.role !== UserRole.HOST && user.role !== UserRole.ADMIN)) {
+      return NextResponse.json(
+        { success: false, error: 'Only hosts can create hackathons' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     
     // Create hackathon in database
@@ -98,7 +120,8 @@ export async function POST(request: NextRequest) {
       endDate: new Date(body.endDate),
       difficulty: body.difficulty?.toUpperCase() as Difficulty,
       imageUrl: body.imageUrl,
-      tags: body.tags
+      tags: body.tags,
+      hostId: user.id
     });
 
     return NextResponse.json({

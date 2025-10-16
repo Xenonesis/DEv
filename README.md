@@ -6,7 +6,7 @@
 
 **🚀 The Premier Platform for Tech Competitions, Hackathons, and Learning**
 
-[![Version](https://img.shields.io/badge/Version-0.20-4F46E5?style=for-the-badge&logo=semver&logoColor=white)](https://github.com/neofest/neofest)
+[![Version](https://img.shields.io/badge/Version-0.21-4F46E5?style=for-the-badge&logo=semver&logoColor=white)](https://github.com/neofest/neofest)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
