@@ -178,6 +178,23 @@ export async function POST(
       );
     }
 
+    // Get hackathon to check if user is the host
+    const hackathon = await getHackathonById(params.id);
+    if (!hackathon) {
+      return NextResponse.json(
+        { success: false, error: 'Hackathon not found' },
+        { status: 404 }
+      );
+    }
+
+    // Prevent host from registering for their own hackathon
+    if (hackathon.hostId === user.id) {
+      return NextResponse.json(
+        { success: false, error: 'You cannot register for your own hackathon' },
+        { status: 403 }
+      );
+    }
+
     // Register user for hackathon
     await registerForHackathon(params.id, user.id);
 

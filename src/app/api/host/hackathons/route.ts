@@ -25,7 +25,21 @@ export async function GET(request: NextRequest) {
     const hackathons = await db.hackathon.findMany({
       where: { hostId: user.id },
       include: {
-        participants: true,
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true
+              }
+            }
+          },
+          orderBy: {
+            registeredAt: 'desc'
+          }
+        },
         _count: {
           select: { participants: true }
         }

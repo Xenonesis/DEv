@@ -43,6 +43,16 @@ interface Hackathon {
     tags?: string;
     difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
     participantCount?: number;
+    participants?: Array<{
+        id: string;
+        user: {
+            id: string;
+            name: string;
+            email: string;
+            avatar?: string;
+        };
+        registeredAt: string;
+    }>;
 }
 
 interface HostStats {
@@ -65,6 +75,7 @@ export default function HostPanel() {
     const [loading, setLoading] = useState(true);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [editingHackathon, setEditingHackathon] = useState<Hackathon | null>(null);
+    const [viewingParticipants, setViewingParticipants] = useState<Hackathon | null>(null);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -488,7 +499,16 @@ export default function HostPanel() {
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
+                                                    onClick={() => setViewingParticipants(hackathon)}
+                                                    title="View Participants"
+                                                >
+                                                    <Users className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
                                                     onClick={() => router.push(`/hackathons/${hackathon.id}`)}
+                                                    title="View Details"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </Button>
@@ -496,6 +516,7 @@ export default function HostPanel() {
                                                     size="sm"
                                                     variant="outline"
                                                     onClick={() => handleEdit(hackathon)}
+                                                    title="Edit"
                                                 >
                                                     <Edit className="w-4 h-4" />
                                                 </Button>
@@ -503,6 +524,7 @@ export default function HostPanel() {
                                                     size="sm"
                                                     variant="destructive"
                                                     onClick={() => handleDelete(hackathon.id)}
+                                                    title="Delete"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
@@ -520,6 +542,52 @@ export default function HostPanel() {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Participants Dialog */}
+            <Dialog open={!!viewingParticipants} onOpenChange={() => setViewingParticipants(null)}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Participants - {viewingParticipants?.title}</DialogTitle>
+                        <DialogDescription>
+                            {viewingParticipants?.participantCount || 0} participant(s) registered
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="max-h-[400px] overflow-y-auto">
+                        {viewingParticipants?.participants && viewingParticipants.participants.length > 0 ? (
+                            <div className="space-y-3">
+                                {viewingParticipants.participants.map((participant) => (
+                                    <div
+                                        key={participant.id}
+                                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center text-purple-600 dark:text-purple-400 font-semibold">
+                                                {participant.user.name?.charAt(0).toUpperCase() || 'U'}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold">{participant.user.name}</p>
+                                                <p className="text-sm text-muted-foreground">{participant.user.email}</p>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xs text-muted-foreground">Registered</p>
+                                            <p className="text-sm">
+                                                {new Date(participant.registeredAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                <p>No participants yet</p>
+                                <p className="text-sm">Be patient, registrations will come!</p>
+                            </div>
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -228,6 +228,14 @@ export const getHackathonById = async (id: string) => {
   const hackathon = await db.hackathon.findUnique({
     where: { id },
     include: {
+      host: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          email: true
+        }
+      },
       participants: {
         include: {
           user: {
