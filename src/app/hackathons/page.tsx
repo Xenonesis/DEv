@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, Filter, Calendar, Clock, Users, Trophy, MapPin, ExternalLink, Heart, Eye, Star, Sparkles, Code, Zap, Target, Award, Globe, TrendingUp } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Search, Filter, Calendar, Clock, Users, Trophy, MapPin, ExternalLink, Heart, Eye, Star, Sparkles, Code, Zap, Target, Award, Globe, TrendingUp, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -176,6 +177,7 @@ const mockHackathons: Hackathon[] = [
 ];
 
 export default function HackathonsPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
@@ -183,7 +185,7 @@ export default function HackathonsPage() {
   const [sortBy, setSortBy] = useState('date');
   const [hackathons, setHackathons] = useState<Hackathon[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isVisible, setIsVisible] = useState({});
+  const [isVisible, setIsVisible] = useState<Record<string, boolean>>({});
   const heroRef = useRef(null);
   const statsRef = useRef(null);
   const filtersRef = useRef(null);
@@ -459,7 +461,11 @@ export default function HackathonsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {featuredHackathons.map((hackathon) => (
-                <Card key={hackathon.id} className="group hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white/80 to-purple-50/50 dark:from-gray-900/80 dark:to-purple-950/20 backdrop-blur-lg border-0 overflow-hidden relative">
+                <Card 
+                  key={hackathon.id} 
+                  className="group hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white/80 to-purple-50/50 dark:from-gray-900/80 dark:to-purple-950/20 backdrop-blur-lg border-0 overflow-hidden relative cursor-pointer"
+                  onClick={() => router.push(`/hackathons/${hackathon.id}`)}
+                >
                   {/* Featured badge */}
                   <div className="absolute top-4 right-4 z-10">
                     <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 text-xs font-semibold">
@@ -542,10 +548,22 @@ export default function HackathonsPage() {
                       <Button 
                         className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300" 
                         disabled={!isRegistrationOpen(hackathon.registrationDeadline)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/hackathons/${hackathon.id}`);
+                        }}
                       >
                         {isRegistrationOpen(hackathon.registrationDeadline) ? 'Register Now' : 'Registration Closed'}
                       </Button>
-                      <Button variant="outline" size="icon" className="hover:bg-purple-50 hover:border-purple-300 transition-colors">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="hover:bg-purple-50 hover:border-purple-300 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/hackathons/${hackathon.id}`);
+                        }}
+                      >
                         <ExternalLink className="w-4 h-4" />
                       </Button>
                     </div>
@@ -578,12 +596,34 @@ export default function HackathonsPage() {
             </p>
           </div>
 
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-0 overflow-hidden animate-pulse">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="h-6 w-20 bg-muted rounded"></div>
+                      <div className="h-6 w-12 bg-muted rounded"></div>
+                    </div>
+                    <div className="h-6 w-3/4 bg-muted rounded mb-2"></div>
+                    <div className="h-4 w-full bg-muted rounded"></div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="h-4 w-full bg-muted rounded"></div>
+                    <div className="h-4 w-full bg-muted rounded"></div>
+                    <div className="h-10 w-full bg-muted rounded"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {regularHackathons.map((hackathon, index) => (
               <Card 
                 key={hackathon.id} 
-                className="group hover:shadow-xl transition-all duration-500 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-0 overflow-hidden relative"
+                className="group hover:shadow-xl hover:scale-[1.02] transition-all duration-500 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-0 overflow-hidden relative cursor-pointer"
                 style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => router.push(`/hackathons/${hackathon.id}`)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start mb-2">
@@ -663,10 +703,22 @@ export default function HackathonsPage() {
                     <Button 
                       className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transform hover:scale-105 transition-all duration-300" 
                       disabled={!isRegistrationOpen(hackathon.registrationDeadline)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/hackathons/${hackathon.id}`);
+                      }}
                     >
                       {isRegistrationOpen(hackathon.registrationDeadline) ? 'Register' : 'Closed'}
                     </Button>
-                    <Button variant="outline" size="icon" className="hover:bg-purple-50 hover:border-purple-300 transition-colors">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="hover:bg-purple-50 hover:border-purple-300 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/hackathons/${hackathon.id}`);
+                      }}
+                    >
                       <ExternalLink className="w-4 h-4" />
                     </Button>
                   </div>
@@ -682,8 +734,9 @@ export default function HackathonsPage() {
               </Card>
             ))}
           </div>
+          )}
 
-          {hackathons.length === 0 && (
+          {!loading && hackathons.length === 0 && (
             <div className="text-center py-12">
               <div className="text-muted-foreground text-lg mb-4">No hackathons found matching your criteria.</div>
               <Button 

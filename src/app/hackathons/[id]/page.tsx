@@ -19,7 +19,10 @@ import {
   Heart,
   Tag,
   User,
-  CheckCircle2
+  CheckCircle2,
+  Sparkles,
+  Award,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
@@ -170,8 +173,9 @@ export default function HackathonDetailPage() {
         <Navbar />
         <div className="pt-16 flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p>Loading hackathon...</p>
+            <Loader2 className="w-12 h-12 text-purple-600 animate-spin mx-auto mb-4" />
+            <p className="text-lg font-medium">Loading hackathon details...</p>
+            <p className="text-sm text-muted-foreground mt-2">Please wait</p>
           </div>
         </div>
       </div>
@@ -213,26 +217,32 @@ export default function HackathonDetailPage() {
             {/* Main Content */}
             <div className="lg:col-span-2 space-y-6">
               {/* Header */}
-              <Card>
+              <Card className="overflow-hidden border-0 shadow-lg">
                 <CardContent className="pt-6">
                   {hackathon.imageUrl && (
-                    <img
-                      src={hackathon.imageUrl}
-                      alt={hackathon.title}
-                      className="w-full h-64 object-cover rounded-lg mb-6"
-                    />
+                    <div className="relative mb-6 group">
+                      <img
+                        src={hackathon.imageUrl}
+                        alt={hackathon.title}
+                        className="w-full h-64 object-cover rounded-lg transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-lg"></div>
+                    </div>
                   )}
 
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h1 className="text-3xl font-bold mb-2">{hackathon.title}</h1>
-                      <p className="text-muted-foreground">{hackathon.theme}</p>
+                      <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">{hackathon.title}</h1>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="w-5 h-5 text-purple-600" />
+                        <p className="text-lg font-medium text-muted-foreground">{hackathon.theme}</p>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Badge className={getStatusColor(hackathon.status)}>
+                    <div className="flex gap-2 flex-wrap justify-end">
+                      <Badge className={`${getStatusColor(hackathon.status)} text-sm px-3 py-1`}>
                         {hackathon.status}
                       </Badge>
-                      <Badge className={getDifficultyColor(hackathon.difficulty)}>
+                      <Badge className={`${getDifficultyColor(hackathon.difficulty)} text-sm px-3 py-1`}>
                         {hackathon.difficulty}
                       </Badge>
                     </div>
@@ -250,43 +260,51 @@ export default function HackathonDetailPage() {
                   <Separator className="my-6" />
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-muted-foreground" />
+                    <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 rounded-lg transition-all hover:scale-105 hover:shadow-md">
+                      <Calendar className="w-5 h-5 text-purple-600" />
                       <div>
-                        <p className="text-xs text-muted-foreground">Start Date</p>
-                        <p className="font-semibold">
+                        <p className="text-xs text-muted-foreground font-medium">Start Date</p>
+                        <p className="font-semibold text-sm">
                           {new Date(hackathon.startDate).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-muted-foreground" />
+                    <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 rounded-lg transition-all hover:scale-105 hover:shadow-md">
+                      <Clock className="w-5 h-5 text-blue-600" />
                       <div>
-                        <p className="text-xs text-muted-foreground">End Date</p>
-                        <p className="font-semibold">
+                        <p className="text-xs text-muted-foreground font-medium">End Date</p>
+                        <p className="font-semibold text-sm">
                           {new Date(hackathon.endDate).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <Users className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-xs text-muted-foreground">Participants</p>
-                        <p className="font-semibold">
+                    <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg transition-all hover:scale-105 hover:shadow-md">
+                      <Users className="w-5 h-5 text-green-600" />
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground font-medium">Participants</p>
+                        <p className="font-semibold text-sm">
                           {hackathon.participants.length}
                           {hackathon.maxParticipants && ` / ${hackathon.maxParticipants}`}
                         </p>
+                        {hackathon.maxParticipants && (
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
+                            <div 
+                              className="bg-gradient-to-r from-green-600 to-emerald-600 h-1.5 rounded-full transition-all duration-500"
+                              style={{ width: `${(hackathon.participants.length / hackathon.maxParticipants) * 100}%` }}
+                            ></div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     {hackathon.prize && (
-                      <div className="flex items-center gap-2">
-                        <Trophy className="w-5 h-5 text-muted-foreground" />
+                      <div className="flex items-center gap-3 p-3 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 rounded-lg transition-all hover:scale-105 hover:shadow-md">
+                        <Trophy className="w-5 h-5 text-yellow-600" />
                         <div>
-                          <p className="text-xs text-muted-foreground">Prize</p>
-                          <p className="font-semibold">{hackathon.prize}</p>
+                          <p className="text-xs text-muted-foreground font-medium">Prize</p>
+                          <p className="font-semibold text-sm">{hackathon.prize}</p>
                         </div>
                       </div>
                     )}
@@ -295,21 +313,27 @@ export default function HackathonDetailPage() {
               </Card>
 
               {/* Description */}
-              <Card>
+              <Card className="border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle>About This Hackathon</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Award className="w-5 h-5 text-purple-600" />
+                    About This Hackathon
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground whitespace-pre-wrap">
+                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
                     {hackathon.description}
                   </p>
                 </CardContent>
               </Card>
 
               {/* Participants */}
-              <Card>
+              <Card className="border-0 shadow-lg">
                 <CardHeader>
-                  <CardTitle>Participants ({hackathon.participants.length})</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-purple-600" />
+                    Participants ({hackathon.participants.length})
+                  </CardTitle>
                   <CardDescription>
                     People who have registered for this hackathon
                   </CardDescription>
@@ -320,7 +344,7 @@ export default function HackathonDetailPage() {
                       {hackathon.participants.map((participant) => (
                         <div
                           key={participant.id}
-                          className="flex items-center gap-3 p-3 border rounded-lg"
+                          className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 hover:shadow-md transition-all duration-300 cursor-pointer"
                         >
                           <Avatar>
                             <AvatarImage src={participant.user.avatar} />
@@ -347,9 +371,9 @@ export default function HackathonDetailPage() {
             {/* Sidebar */}
             <div className="space-y-6">
               {/* Registration Card */}
-              <Card>
+              <Card className="border-0 shadow-lg sticky top-20">
                 <CardHeader>
-                  <CardTitle>Registration</CardTitle>
+                  <CardTitle className="text-center">Registration</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {isHost ? (
@@ -400,7 +424,7 @@ export default function HackathonDetailPage() {
               </Card>
 
               {/* Host Info */}
-              <Card>
+              <Card className="border-0 shadow-lg">
                 <CardHeader>
                   <CardTitle>Hosted By</CardTitle>
                 </CardHeader>
@@ -421,7 +445,7 @@ export default function HackathonDetailPage() {
               </Card>
 
               {/* Share */}
-              <Card>
+              <Card className="border-0 shadow-lg">
                 <CardHeader>
                   <CardTitle>Share</CardTitle>
                 </CardHeader>
