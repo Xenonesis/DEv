@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import { Canvas, ThreeEvent, useFrame, useThree } from '@react-three/fiber';
 import { shaderMaterial, useTrailTexture } from '@react-three/drei';
 import { useTheme } from 'next-themes';
 import * as THREE from 'three';
-import { ChevronRight, Mail, Phone, MapPin, Github, Linkedin, Twitter, ArrowRight, Trophy, Calendar, Users, BookOpen, Star, Zap, Target, Award, TrendingUp, MessageSquare, Sparkles, Code, Palette, Cpu, Database, Globe, Smartphone, Rocket, Heart, Brain, Lightbulb } from 'lucide-react';
+import { ChevronRight, Mail, Phone, MapPin, Github, Linkedin, Twitter, ArrowRight, Trophy, Calendar, Users, BookOpen, Star, Zap, Target, Award, TrendingUp, MessageSquare, Sparkles, Code, Palette, Cpu, Database, Globe, Smartphone, Rocket, Heart, Brain, Lightbulb, CheckCircle2, Play, ExternalLink, Briefcase, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ThemeToggle } from '@/components/theme-toggle';
 import Navbar from '@/components/Navbar';
+import Link from 'next/link';
 
 const DotMaterial = shaderMaterial(
   {
@@ -165,8 +167,11 @@ function DotShaderBackground() {
         toneMapping: THREE.NoToneMapping
       }}
       className="absolute inset-0"
+      dpr={[1, 2]}
     >
-      <DotScreenShader />
+      <Suspense fallback={null}>
+        <DotScreenShader />
+      </Suspense>
     </Canvas>
   );
 }
@@ -180,9 +185,12 @@ export default function Home() {
     success: 0
   });
   const [isVisible, setIsVisible] = useState<Record<string, boolean>>({});
+  const [hoveredCard, setHoveredCard] = useState<number | null>(null);
   const heroRef = useRef(null);
   const statsRef = useRef(null);
   const featuresRef = useRef(null);
+  const categoriesRef = useRef(null);
+  const testimonialsRef = useRef(null);
 
   // Intersection Observer for scroll animations
   useEffect(() => {
@@ -198,7 +206,7 @@ export default function Home() {
       { threshold: 0.1 }
     );
 
-    const elements = [heroRef.current, statsRef.current, featuresRef.current];
+    const elements = [heroRef.current, statsRef.current, featuresRef.current, categoriesRef.current, testimonialsRef.current];
     elements.forEach((el) => el && observer.observe(el));
 
     return () => observer.disconnect();
@@ -381,7 +389,7 @@ export default function Home() {
       <section
         ref={heroRef}
         id="hero"
-        className="relative flex min-h-screen items-center overflow-hidden pt-20"
+        className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16 sm:pt-20"
       >
         <div className="absolute inset-0">
           <DotShaderBackground />
@@ -389,110 +397,123 @@ export default function Home() {
 
         <div className="absolute inset-0 bg-gradient-to-br from-purple-950/30 via-transparent to-blue-950/30 mix-blend-screen" />
 
-        <div className="max-w-7xl relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-7xl relative z-10 mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-0">
           <div className={`text-center transition-all duration-1000 ${isVisible['hero'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {/* Animated announcement badge */}
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/20 dark:to-blue-950/20 text-purple-600 px-6 py-3 rounded-full text-sm font-medium mb-8 backdrop-blur-sm border border-purple-200/50 hover:scale-105 transition-transform duration-300">
-              <Sparkles className="animate-pulse" size={18} />
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/30 dark:to-blue-950/30 text-purple-700 dark:text-purple-300 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 backdrop-blur-md border border-purple-200/50 dark:border-purple-800/50 hover:scale-105 transition-transform duration-300 cursor-pointer shadow-lg">
+              <Sparkles className="animate-pulse w-4 h-4 sm:w-5 sm:h-5" />
               <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent font-semibold">
                 🔥 New AI Challenges Now Live!
               </span>
-              <ChevronRight className="animate-bounce" size={16} />
+              <ChevronRight className="animate-bounce w-3 h-3 sm:w-4 sm:h-4" />
             </div>
             
             {/* Enhanced main heading with gradient and animation */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-foreground mb-6 leading-tight mix-blend-exclusion text-white">
-              <span className="block mb-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold text-foreground mb-4 sm:mb-6 leading-tight">
+              <span className="block mb-2 animate-fade-in-up text-white mix-blend-exclusion" style={{ animationDelay: '0.1s' }}>
                 Compete,
               </span>
-              <span className="block mb-2 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <span className="block mb-2 animate-fade-in-up text-white mix-blend-exclusion" style={{ animationDelay: '0.2s' }}>
                 Learn,
               </span>
-              <span className="block bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500 bg-clip-text text-transparent bg-size-200 animate-gradient-shift">
+              <span className="block bg-gradient-to-r from-purple-400 via-blue-400 to-purple-500 bg-clip-text text-transparent bg-size-200 animate-gradient-shift drop-shadow-lg">
                 Innovate
               </span>
             </h1>
             
             {/* Enhanced description with better typography */}
-            <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground mb-10 max-w-4xl mx-auto leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-200 dark:text-gray-300 mb-8 sm:mb-10 max-w-3xl mx-auto leading-relaxed animate-fade-in-up px-4" style={{ animationDelay: '0.3s' }}>
               Join the ultimate tech competition platform. Test your skills, win amazing prizes, and accelerate your career with 
-              <span className="font-semibold text-purple-600"> 10,000+ developers</span> worldwide.
+              <span className="font-bold text-purple-400 dark:text-purple-300"> 10,000+ developers</span> worldwide.
             </p>
             
             {/* Enhanced CTA buttons with better hover effects */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-10 sm:mb-12 animate-fade-in-up px-4" style={{ animationDelay: '0.4s' }}>
               <Button 
+                asChild
                 size="lg" 
-                className="text-lg px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden"
+                className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 group relative overflow-hidden rounded-xl font-semibold"
               >
-                <span className="relative z-10 flex items-center">
-                  Join Competitions
-                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300" size={20} />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <Link href="/hackathons" className="w-full sm:w-auto">
+                  <span className="relative z-10 flex items-center justify-center">
+                    Join Competitions
+                    <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300" size={20} />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-blue-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </Link>
               </Button>
               <Button 
+                asChild
                 variant="outline" 
                 size="lg" 
-                className="text-lg px-8 py-4 border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 hover:shadow-lg transform hover:scale-105 transition-all duration-300 backdrop-blur-sm"
+                className="text-base sm:text-lg px-6 sm:px-8 py-5 sm:py-6 border-2 border-white/30 dark:border-purple-400/30 text-white dark:text-purple-300 hover:bg-white/10 dark:hover:bg-purple-950/30 hover:border-white/50 dark:hover:border-purple-400/50 hover:shadow-xl transform hover:scale-105 transition-all duration-300 backdrop-blur-md group rounded-xl font-semibold"
               >
-                Explore Events
+                <Link href="/events" className="flex items-center justify-center w-full sm:w-auto">
+                  Explore Events
+                  <Play className="ml-2 group-hover:translate-x-1 transition-transform duration-300" size={18} />
+                </Link>
               </Button>
             </div>
 
             {/* Enhanced social proof with animations */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 text-sm text-muted-foreground animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-200 dark:text-gray-300 animate-fade-in-up px-4" style={{ animationDelay: '0.5s' }}>
               {[
-                { icon: Star, text: "4.9/5 Rating", color: "text-yellow-500" },
-                { icon: Users, text: "10,000+ Members", color: "text-purple-600" },
-                { icon: Trophy, text: "100+ Competitions", color: "text-blue-600" }
+                { icon: Star, text: "4.9/5 Rating", color: "text-yellow-400" },
+                { icon: Users, text: "10,000+ Members", color: "text-purple-400" },
+                { icon: Trophy, text: "100+ Competitions", color: "text-blue-400" }
               ].map((item, index) => (
                 <div 
                   key={index}
-                  className="flex items-center space-x-2 px-4 py-2 rounded-full bg-background/50 backdrop-blur-sm border border-border hover:scale-105 transition-transform duration-300"
+                  className="flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-full bg-white/10 dark:bg-white/5 backdrop-blur-md border border-white/20 dark:border-white/10 hover:scale-105 transition-transform duration-300 shadow-lg"
                   style={{ animationDelay: `${0.6 + index * 0.1}s` }}
                 >
                   <item.icon className={`${item.color} fill-current`} size={16} />
-                  <span className="font-medium">{item.text}</span>
+                  <span className="font-medium whitespace-nowrap">{item.text}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronRight className="rotate-90 text-white/70" size={24} />
-        </div>
+        <button 
+          onClick={() => document.getElementById('stats')?.scrollIntoView({ behavior: 'smooth' })}
+          className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 animate-bounce cursor-pointer bg-white/10 dark:bg-white/5 backdrop-blur-md p-2 rounded-full border border-white/20 dark:border-white/10 hover:bg-white/20 dark:hover:bg-white/10 transition-colors duration-300"
+          aria-label="Scroll to next section"
+        >
+          <ChevronDown className="text-white/70" size={24} />
+        </button>
       </section>
 
       {/* Enhanced Statistics Section with Glassmorphism */}
       <section 
         ref={statsRef}
         id="stats" 
-        className="py-20 bg-muted/30 relative overflow-hidden"
+        className="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-muted/30 to-background relative overflow-hidden"
       >
         {/* Background decoration */}
         <div className="absolute inset-0 bg-gradient-to-r from-purple-100/50 via-transparent to-blue-100/50 dark:from-purple-950/10 dark:to-blue-950/10"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className={`grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 transition-all duration-1000 ${isVisible['stats'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 transition-all duration-1000 ${isVisible['stats'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {[
-              { value: counters.competitions, suffix: "+", label: "Competitions", icon: Trophy, color: "purple" },
-              { value: counters.participants, suffix: "+", label: "Participants", icon: Users, color: "blue" },
-              { value: `$${counters.prizes.toLocaleString()}`, suffix: "+", label: "Prize Pool", icon: Award, color: "green" },
-              { value: counters.success, suffix: "%", label: "Success Rate", icon: TrendingUp, color: "orange" }
+              { value: counters.competitions, suffix: "+", label: "Active Competitions", icon: Trophy, color: "purple", gradient: "from-purple-600 to-purple-400" },
+              { value: counters.participants, suffix: "+", label: "Global Participants", icon: Users, color: "blue", gradient: "from-blue-600 to-blue-400" },
+              { value: `$${counters.prizes.toLocaleString()}`, suffix: "+", label: "Total Prize Pool", icon: Award, color: "green", gradient: "from-green-600 to-green-400" },
+              { value: counters.success, suffix: "%", label: "Success Rate", icon: TrendingUp, color: "orange", gradient: "from-orange-600 to-orange-400" }
             ].map((stat, index) => (
               <div 
                 key={index}
                 className="text-center group"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg rounded-2xl p-6 border border-border/50 hover:shadow-xl transition-all duration-300 hover:scale-105 hover:bg-white/90 dark:hover:bg-gray-900/90">
-                  <stat.icon className={`w-8 h-8 mx-auto mb-3 text-${stat.color}-600 group-hover:scale-110 transition-transform duration-300`} />
-                  <div className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-${stat.color}-600 to-${stat.color}-400 bg-clip-text text-transparent mb-2`}>
+                <div className="bg-card/80 dark:bg-card/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 border border-border/50 hover:border-border transition-all duration-300 hover:scale-105 hover:shadow-2xl">
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 mx-auto mb-3 sm:mb-4 bg-gradient-to-br ${stat.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}>
+                    <stat.icon className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-white" />
+                  </div>
+                  <div className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent mb-1 sm:mb-2`}>
                     {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}{stat.suffix}
                   </div>
-                  <div className="text-muted-foreground font-medium">{stat.label}</div>
+                  <div className="text-xs sm:text-sm md:text-base text-muted-foreground font-medium">{stat.label}</div>
                 </div>
               </div>
             ))}
@@ -504,58 +525,58 @@ export default function Home() {
       <section 
         ref={featuresRef}
         id="features" 
-        className="py-20 bg-background relative overflow-hidden"
+        className="py-16 sm:py-20 lg:py-24 bg-background relative overflow-hidden"
       >
         {/* Background pattern */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-5 dark:opacity-10">
           <div className="absolute inset-0" style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}></div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className={`text-center mb-16 transition-all duration-1000 ${isVisible['features'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/20 dark:to-blue-950/20 text-purple-600 px-6 py-3 rounded-full text-sm font-medium mb-8 backdrop-blur-sm border border-purple-200/50">
+          <div className={`text-center mb-12 sm:mb-16 transition-all duration-1000 ${isVisible['features'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/30 dark:to-blue-950/30 text-purple-600 dark:text-purple-400 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 backdrop-blur-md border border-purple-200/50 dark:border-purple-800/50 shadow-lg">
               <Target size={18} />
               <span className="font-semibold">Why Choose NeoFest</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4 sm:mb-6 px-4">
               Everything You Need to 
-              <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"> Succeed</span>
+              <span className="block sm:inline bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"> Succeed</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
               We provide the perfect platform to showcase your skills, learn from experts, and connect with opportunities that matter.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {features.map((feature, index) => (
               <Card 
                 key={index} 
-                className="group hover:shadow-2xl transition-all duration-500 border-0 bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-900/80 dark:to-gray-800/80 backdrop-blur-lg hover:scale-105 hover:bg-gradient-to-br hover:from-white hover:to-gray-50 dark:hover:from-gray-900 dark:hover:to-gray-800 overflow-hidden relative"
+                className="group hover:shadow-2xl transition-all duration-500 border bg-card/50 dark:bg-card/30 backdrop-blur-xl hover:scale-[1.02] overflow-hidden relative"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Background decoration */}
-                <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-500" 
+                <div className="absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-5 dark:group-hover:opacity-10 transition-opacity duration-500" 
                      style={{ backgroundImage: `linear-gradient(135deg, ${feature.gradient.split(' ')[1]}, ${feature.gradient.split(' ')[3]})` }}>
                 </div>
                 
-                <CardHeader className="relative z-10">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg`}>
-                    <feature.icon className="text-white" size={32} />
+                <CardHeader className="relative z-10 pb-4">
+                  <div className={`w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r ${feature.gradient} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg`}>
+                    <feature.icon className="text-white w-7 h-7 sm:w-8 sm:h-8" />
                   </div>
-                  <CardTitle className="text-xl group-hover:text-purple-600 transition-colors duration-300">
+                  <CardTitle className="text-lg sm:text-xl group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
                     {feature.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="relative z-10">
-                  <CardDescription className="text-base leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors duration-300">
+                <CardContent className="relative z-10 pt-0">
+                  <CardDescription className="text-sm sm:text-base leading-relaxed text-muted-foreground group-hover:text-foreground/80 transition-colors duration-300">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
                 
                 {/* Hover effect overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
               </Card>
             ))}
           </div>
@@ -563,136 +584,152 @@ export default function Home() {
       </section>
 
       {/* Enhanced Competition Categories with Interactive Cards */}
-      <section className="py-20 bg-muted/30 relative overflow-hidden">
+      <section 
+        ref={categoriesRef}
+        id="categories"
+        className="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-background to-muted/30 relative overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/20 dark:to-blue-950/20 text-purple-600 px-6 py-3 rounded-full text-sm font-medium mb-8 backdrop-blur-sm border border-purple-200/50">
+          <div className={`text-center mb-12 sm:mb-16 transition-all duration-1000 ${isVisible['categories'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/30 dark:to-blue-950/30 text-purple-600 dark:text-purple-400 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 backdrop-blur-md border border-purple-200/50 dark:border-purple-800/50 shadow-lg">
               <Trophy size={18} />
               <span className="font-semibold">Competition Categories</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4 sm:mb-6 px-4">
               Find Your Perfect 
-              <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"> Challenge</span>
+              <span className="block sm:inline bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"> Challenge</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
               Explore various competition formats and find the perfect challenge for your skills and interests.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {competitionCategories.map((category, index) => (
-              <Card 
-                key={index} 
-                className="group cursor-pointer hover:shadow-2xl transition-all duration-500 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg hover:scale-105 overflow-hidden relative border-0"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {/* Background gradient overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-br from-${category.color}-50/50 to-transparent dark:from-${category.color}-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-                
-                <CardHeader className="relative z-10">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="relative">
-                      <div className={`w-14 h-14 bg-gradient-to-r from-${category.color}-600 to-${category.color}-400 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg`}>
-                        <category.icon className="text-white" size={28} />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            {competitionCategories.map((category, index) => {
+              const colorMap: Record<string, string> = {
+                purple: 'from-purple-600 to-purple-400',
+                blue: 'from-blue-600 to-blue-400',
+                green: 'from-green-600 to-green-400',
+                orange: 'from-orange-600 to-orange-400',
+                indigo: 'from-indigo-600 to-indigo-400',
+                pink: 'from-pink-600 to-pink-400',
+              };
+              const gradient = colorMap[category.color] || 'from-purple-600 to-purple-400';
+              
+              return (
+                <Card 
+                  key={index} 
+                  className="group cursor-pointer hover:shadow-2xl transition-all duration-500 bg-card/50 dark:bg-card/30 backdrop-blur-xl hover:scale-[1.02] overflow-hidden relative border"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  {/* Background gradient overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${gradient.replace('to-', 'to-transparent dark:from-')}/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                  
+                  <CardHeader className="relative z-10 pb-4">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="relative">
+                        <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r ${gradient} rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg`}>
+                          <category.icon className="text-white w-6 h-6 sm:w-7 sm:h-7" />
+                        </div>
                       </div>
-                      <div className="absolute -top-2 -right-2 text-2xl animate-bounce" style={{ animationDelay: `${index * 0.2}s` }}>
-                        {category.bgIcon}
+                      <div className="text-right">
+                        <div className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                          {category.count}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Active</div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                        {category.count}
+                    <CardTitle className="text-lg sm:text-xl group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 mb-3">
+                      {category.title}
+                    </CardTitle>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="secondary" className="text-xs font-medium">
+                        <span className={`w-2 h-2 rounded-full mr-1.5 bg-gradient-to-r ${gradient} animate-pulse`}></span>
+                        {category.difficulty}
+                      </Badge>
+                      <div className="text-xs text-muted-foreground flex items-center">
+                        <Users size={12} className="mr-1" />
+                        <span>{category.participants}</span>
                       </div>
-                      <div className="text-xs text-muted-foreground">Active</div>
                     </div>
-                  </div>
-                  <CardTitle className="text-xl group-hover:text-purple-600 transition-colors duration-300">
-                    {category.title}
-                  </CardTitle>
-                  <div className="flex items-center gap-2 mt-2">
-                    <div className={`inline-flex items-center px-3 py-1 bg-${category.color}-100 dark:bg-${category.color}-950/20 rounded-full text-xs font-medium`}>
-                      <span className={`w-2 h-2 rounded-full mr-2 bg-${category.color}-500 animate-pulse`}></span>
-                      {category.difficulty}
-                    </div>
-                    <div className="text-xs text-muted-foreground flex items-center">
-                      <Users size={12} className="mr-1" />
-                      {category.participants}
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="relative z-10">
-                  <CardDescription className="text-base mb-4 leading-relaxed">
-                    {category.description}
-                  </CardDescription>
-                  <Button 
-                    variant="link" 
-                    className="p-0 h-auto text-purple-600 hover:text-purple-700 group/link"
-                  >
-                    <span className="flex items-center">
-                      Explore challenges 
-                      <ChevronRight 
-                        size={16} 
-                        className="ml-1 group-hover/link:translate-x-1 transition-transform duration-300" 
-                      />
-                    </span>
-                  </Button>
-                </CardContent>
-                
-                {/* Shimmer effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"></div>
-              </Card>
-            ))}
+                  </CardHeader>
+                  <CardContent className="relative z-10 pt-0">
+                    <CardDescription className="text-sm sm:text-base mb-4 leading-relaxed">
+                      {category.description}
+                    </CardDescription>
+                    <Button 
+                      variant="link" 
+                      className="p-0 h-auto text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 group/link"
+                    >
+                      <span className="flex items-center text-sm">
+                        Explore challenges 
+                        <ChevronRight 
+                          size={16} 
+                          className="ml-1 group-hover/link:translate-x-1 transition-transform duration-300" 
+                        />
+                      </span>
+                    </Button>
+                  </CardContent>
+                  
+                  {/* Shimmer effect on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 dark:via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 pointer-events-none"></div>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Enhanced Testimonials Section */}
-      <section className="py-20 bg-background relative overflow-hidden">
+      <section 
+        ref={testimonialsRef}
+        id="testimonials"
+        className="py-16 sm:py-20 lg:py-24 bg-background relative overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/20 dark:to-blue-950/20 text-purple-600 px-6 py-3 rounded-full text-sm font-medium mb-8 backdrop-blur-sm border border-purple-200/50">
+          <div className={`text-center mb-12 sm:mb-16 transition-all duration-1000 ${isVisible['testimonials'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/30 dark:to-blue-950/30 text-purple-600 dark:text-purple-400 px-4 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 backdrop-blur-md border border-purple-200/50 dark:border-purple-800/50 shadow-lg">
               <MessageSquare size={18} />
               <span className="font-semibold">Success Stories</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-6">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4 sm:mb-6 px-4">
               What Our 
-              <span className="bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"> Winners Say</span>
+              <span className="block sm:inline bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent"> Winners Say</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
               Join thousands of developers who have transformed their careers through NeoFest competitions.
             </p>
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <Card className="bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-purple-950/20 dark:via-gray-900 dark:to-blue-950/20 border-0 shadow-2xl overflow-hidden relative">
+            <Card className="bg-gradient-to-br from-purple-50/50 via-card to-blue-50/50 dark:from-purple-950/10 dark:via-card dark:to-blue-950/10 border shadow-2xl overflow-hidden relative backdrop-blur-xl">
               {/* Background decoration */}
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-100/50 to-blue-100/50 dark:from-purple-950/10 dark:to-blue-950/10"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-100/30 to-blue-100/30 dark:from-purple-950/5 dark:to-blue-950/5"></div>
               
-              <CardContent className="p-8 md:p-12 relative z-10">
-                <div className="flex mb-6">
+              <CardContent className="p-6 sm:p-8 md:p-12 relative z-10">
+                <div className="flex mb-4 sm:mb-6">
                   {[...Array(testimonials[activeTestimonial].rating)].map((_, i) => (
                     <Star 
                       key={i} 
-                      className="text-yellow-500 fill-current animate-pulse" 
-                      size={24} 
+                      className="text-yellow-500 fill-current animate-pulse w-5 h-5 sm:w-6 sm:h-6" 
                       style={{ animationDelay: `${i * 0.1}s` }}
                     />
                   ))}
                 </div>
-                <blockquote className="text-lg md:text-xl text-muted-foreground mb-8 italic leading-relaxed">
+                <blockquote className="text-base sm:text-lg md:text-xl text-muted-foreground mb-6 sm:mb-8 italic leading-relaxed">
                   "{testimonials[activeTestimonial].content}"
                 </blockquote>
                 <div className="flex items-center">
-                  <div className="w-14 h-14 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mr-4 shadow-lg">
-                    <span className="text-white font-bold text-lg">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center mr-3 sm:mr-4 shadow-lg flex-shrink-0">
+                    <span className="text-white font-bold text-base sm:text-lg">
                       {testimonials[activeTestimonial].avatar}
                     </span>
                   </div>
                   <div>
-                    <div className="font-semibold text-foreground text-lg">
+                    <div className="font-semibold text-foreground text-base sm:text-lg">
                       {testimonials[activeTestimonial].name}
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
                       {testimonials[activeTestimonial].role}
                     </div>
                   </div>
@@ -701,15 +738,16 @@ export default function Home() {
             </Card>
 
             {/* Enhanced testimonial dots */}
-            <div className="flex justify-center mt-8 space-x-3">
+            <div className="flex justify-center mt-6 sm:mt-8 space-x-2 sm:space-x-3">
               {testimonials.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveTestimonial(index)}
+                  aria-label={`View testimonial ${index + 1}`}
                   className={`h-2 rounded-full transition-all duration-500 ${
                     activeTestimonial === index
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 w-12'
-                      : 'bg-muted hover:bg-purple-300 w-2'
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 w-8 sm:w-12'
+                      : 'bg-muted hover:bg-purple-300 dark:hover:bg-purple-700 w-2'
                   }`}
                 />
               ))}
@@ -719,7 +757,7 @@ export default function Home() {
       </section>
 
       {/* Enhanced CTA Section with Advanced Effects */}
-      <section className="py-20 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-600 relative overflow-hidden">
+      <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-br from-purple-600 via-blue-600 to-purple-600 relative overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0">
           <div className="absolute top-0 left-0 w-full h-full bg-black/10"></div>
@@ -740,55 +778,60 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md text-white px-6 py-3 rounded-full text-sm font-medium mb-8 border border-white/30">
-            <Zap className="animate-pulse" size={18} />
+          <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 border border-white/30 shadow-lg">
+            <Zap className="animate-pulse w-4 h-4 sm:w-5 sm:h-5" />
             <span className="font-semibold">Join 10,000+ Developers</span>
           </div>
           
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-8">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 sm:mb-8 px-4">
             Ready to Start Your 
-            <span className="block bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+            <span className="block mt-2 bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
               Journey?
             </span>
           </h2>
           
-          <p className="text-xl text-white/90 mb-10 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-white/90 mb-8 sm:mb-10 max-w-3xl mx-auto leading-relaxed px-4">
             Don't miss out on the opportunity to compete, learn, and grow. Join NeoFest today and take your tech career to the next level.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-10 sm:mb-12 px-4">
             <Button 
+              asChild
               size="lg" 
-              variant="secondary" 
-              className="bg-white text-purple-600 hover:bg-gray-100 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 px-8 py-4 text-lg group"
+              className="bg-white text-purple-600 hover:bg-gray-100 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg group font-semibold rounded-xl"
             >
-              <span className="flex items-center">
-                Get Started Free
-                <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300" size={20} />
-              </span>
+              <Link href="/auth/signup">
+                <span className="flex items-center justify-center">
+                  Get Started Free
+                  <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform duration-300" size={20} />
+                </span>
+              </Link>
             </Button>
             <Button 
+              asChild
               size="lg" 
-              variant="outline" 
-              className="border-white text-white hover:bg-white hover:text-purple-600 backdrop-blur-sm px-8 py-4 text-lg transition-all duration-300"
+              variant="outline"
+              className="border-2 border-white text-white hover:bg-white hover:text-purple-600 backdrop-blur-md px-6 sm:px-8 py-5 sm:py-6 text-base sm:text-lg transition-all duration-300 font-semibold rounded-xl"
             >
-              View Upcoming Events
+              <Link href="/events">
+                View Upcoming Events
+              </Link>
             </Button>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 text-white/80 text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 text-white/90 text-xs sm:text-sm px-4">
             {[
-              { icon: Trophy, text: "No credit card required" },
-              { icon: Users, text: "Join in 2 minutes" },
-              { icon: Award, text: "Start competing today" }
+              { icon: CheckCircle2, text: "No credit card required" },
+              { icon: Zap, text: "Join in 2 minutes" },
+              { icon: Rocket, text: "Start competing today" }
             ].map((item, index) => (
               <div 
                 key={index}
-                className="flex items-center space-x-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
+                className="flex items-center space-x-2 px-3 sm:px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <item.icon size={16} />
-                <span>{item.text}</span>
+                <item.icon className="w-4 h-4" />
+                <span className="whitespace-nowrap">{item.text}</span>
               </div>
             ))}
           </div>
