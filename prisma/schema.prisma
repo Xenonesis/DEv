@@ -44,6 +44,9 @@ model User {
   learningSessions SessionParticipant[]
   achievements     UserAchievement[]
   teamMemberships  TeamMember[]
+  forums           Forum[]              @relation("ForumAuthor")
+  forumReplies     ForumReply[]         @relation("ForumReplyAuthor")
+  successStories   SuccessStory[]       @relation("StoryAuthor")
 
   @@map("users")
 }
@@ -327,6 +330,63 @@ model UserAchievement {
   @@map("user_achievements")
 }
 
+model Forum {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    ForumCategory
+  isPinned    Boolean  @default(false)
+  isLocked    Boolean  @default(false)
+  views       Int      @default(0)
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author      User @relation("ForumAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  replies     ForumReply[]
+
+  @@map("forums")
+}
+
+model ForumReply {
+  id        String   @id @default(cuid())
+  content   String
+  forumId   String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  forum     Forum @relation(fields: [forumId], references: [id], onDelete: Cascade)
+  author    User  @relation("ForumReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("forum_replies")
+}
+
+model SuccessStory {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   // Rich text content
+  excerpt     String
+  imageUrl    String?
+  authorId    String
+  hackathonId String?
+  projectId   String?
+  tags        String?  // JSON string of tags array
+  likes       Int      @default(0)
+  views       Int      @default(0)
+  isFeatured  Boolean  @default(false)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author      User @relation("StoryAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@map("success_stories")
+}
+
 // Enums
 enum HackathonStatus {
   UPCOMING
@@ -375,4 +435,14 @@ enum UserRole {
   USER
   HOST
   ADMIN
+}
+
+enum ForumCategory {
+  GENERAL
+  HELP
+  SHOWCASE
+  ANNOUNCEMENTS
+  FEEDBACK
+  TECHNICAL
+  CAREER
 }
