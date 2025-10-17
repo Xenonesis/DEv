@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
+import Navbar from '@/components/Navbar';
 
 interface ForumReply {
   id: string;
@@ -114,27 +115,35 @@ export default function ForumDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-gray-400">Loading...</div>
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
+          <div className="container mx-auto px-4">
+            <div className="text-center text-gray-400">Loading...</div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!forum) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-gray-400">Forum not found</div>
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
+          <div className="container mx-auto px-4">
+            <div className="text-center text-gray-400">Forum not found</div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
+        <div className="container mx-auto px-4 max-w-4xl">
         <Link href="/forums">
           <Button variant="ghost" className="text-gray-400 hover:text-white mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -251,7 +260,8 @@ export default function ForumDetailPage() {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

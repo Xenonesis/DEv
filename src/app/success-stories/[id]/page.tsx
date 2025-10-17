@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Navbar from '@/components/Navbar';
 
 interface SuccessStory {
   id: string;
@@ -55,27 +56,35 @@ export default function SuccessStoryDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-gray-400">Loading...</div>
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
+          <div className="container mx-auto px-4">
+            <div className="text-center text-gray-400">Loading...</div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (!story) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
-        <div className="container mx-auto px-4">
-          <div className="text-center text-gray-400">Success story not found</div>
+      <>
+        <Navbar />
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
+          <div className="container mx-auto px-4">
+            <div className="text-center text-gray-400">Success story not found</div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
+        <div className="container mx-auto px-4 max-w-4xl">
         <Link href="/success-stories">
           <Button variant="ghost" className="text-gray-400 hover:text-white mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -180,7 +189,8 @@ export default function SuccessStoryDetailPage() {
             </Card>
           )}
         </article>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

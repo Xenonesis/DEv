@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Trophy, Medal, Award, Zap } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import Navbar from '@/components/Navbar';
 import {
   Select,
   SelectContent,
@@ -61,8 +62,10 @@ export default function LeaderboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
-      <div className="container mx-auto px-4">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
+        <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Leaderboard</h1>
           <p className="text-gray-400">Top performers in the community</p>
@@ -217,7 +220,8 @@ export default function LeaderboardPage() {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

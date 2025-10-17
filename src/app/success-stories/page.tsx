@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import Navbar from '@/components/Navbar';
 
 interface SuccessStory {
   id: string;
@@ -95,8 +96,10 @@ export default function SuccessStoriesPage() {
   const regularStories = stories.filter((s) => !s.isFeatured);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
-      <div className="container mx-auto px-4">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 pt-24 pb-12">
+        <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold text-white mb-2">Success Stories</h1>
@@ -312,7 +315,8 @@ export default function SuccessStoriesPage() {
             )}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
