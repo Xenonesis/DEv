@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     
     // Get AI challenges from database
     const challenges = await db.aIChallenge.findMany({
-      ...filters,
+      where: filters.where,
       include: {
         host: {
           select: {
