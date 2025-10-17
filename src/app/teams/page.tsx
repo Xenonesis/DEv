@@ -87,9 +87,17 @@ export default function TeamsPage() {
     try {
       const response = await fetch('/api/hackathons');
       const data = await response.json();
-      setHackathons(data);
+      // Handle different response formats
+      if (data.success && Array.isArray(data.data)) {
+        setHackathons(data.data);
+      } else if (Array.isArray(data)) {
+        setHackathons(data);
+      } else {
+        setHackathons([]);
+      }
     } catch (error) {
       console.error('Error fetching hackathons:', error);
+      setHackathons([]);
     }
   };
 
