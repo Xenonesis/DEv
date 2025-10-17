@@ -274,13 +274,16 @@ export default function EventDetailPage() {
       <div className="pt-16 px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Back Button */}
-          <Link
-            href="/events"
-            className="inline-flex items-center text-purple-500 hover:text-purple-400 dark:text-purple-400 dark:hover:text-purple-300 mb-6 transition-colors"
+          <Button
+            asChild
+            variant="outline"
+            className="inline-flex w-auto items-center gap-2 mb-6 px-4 py-2 text-sm font-medium bg-muted/60 text-foreground hover:bg-muted transition-colors"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Events
-          </Link>
+            <Link href="/events">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Events
+            </Link>
+          </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
