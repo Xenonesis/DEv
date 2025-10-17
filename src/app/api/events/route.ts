@@ -41,18 +41,18 @@ export async function GET(request: NextRequest) {
         location: event.location || 'Online',
         mode: event.isOnline ? 'online' as const : 'offline' as const,
         category: event.type,
-        type: event.type.toLowerCase(),
-        price: 0, // Default for now
+        type: event.type,
+        price: 0,
         currency: 'USD',
         maxAttendees: event.maxAttendees || 100,
-        currentAttendees: event.participants?.length || 0,
-        tags: parseJSON<string[]>(event.tags),
-        organizer: 'NeoFest',
-        speakers: ['TBD'], // Default for now
-        rating: 4.5 + Math.random() * 0.5,
-        views: Math.floor(Math.random() * 2000) + 500,
-        imageUrl: event.imageUrl || '/api/placeholder/400/250',
-        featured: Math.random() > 0.7
+        currentAttendees: event._count?.participants || 0,
+        tags: event.tags,
+        organizer: 'Event Host',
+        speakers: [],
+        rating: 0,
+        views: 0,
+        imageUrl: event.imageUrl || undefined,
+        featured: false
       };
     });
 

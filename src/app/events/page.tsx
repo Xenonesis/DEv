@@ -34,7 +34,7 @@ interface Event {
   featured: boolean;
 }
 
-// Using real API data instead of mock data
+// Fetch events from real API
 const fetchEvents = async (filters: any = {}) => {
   try {
     const params = new URLSearchParams();
@@ -51,141 +51,6 @@ const fetchEvents = async (filters: any = {}) => {
   }
 };
 
-const mockEvents: Event[] = [
-  {
-    id: '1',
-    title: 'Tech Innovation Summit 2024',
-    description: 'Join industry leaders for a day of insights into the latest technology trends and innovations.',
-    date: '2024-03-20',
-    startTime: '09:00',
-    endTime: '18:00',
-    location: 'San Francisco Convention Center',
-    mode: 'offline',
-    category: 'Technology',
-    type: 'summit',
-    price: 299,
-    currency: 'USD',
-    maxAttendees: 500,
-    currentAttendees: 423,
-    tags: ['AI', 'Cloud', 'Innovation', 'Leadership'],
-    organizer: 'TechLeaders Inc',
-    speakers: ['John Doe', 'Jane Smith', 'Mike Johnson'],
-    rating: 4.8,
-    views: 2340,
-    featured: true
-  },
-  {
-    id: '2',
-    title: 'React Advanced Workshop',
-    description: 'Deep dive into advanced React concepts including hooks, performance optimization, and best practices.',
-    date: '2024-03-22',
-    startTime: '14:00',
-    endTime: '17:00',
-    location: 'Online',
-    mode: 'online',
-    category: 'Development',
-    type: 'workshop',
-    price: 49,
-    currency: 'USD',
-    maxAttendees: 100,
-    currentAttendees: 78,
-    tags: ['React', 'JavaScript', 'Frontend', 'Web Development'],
-    organizer: 'React Masters',
-    speakers: ['Sarah Wilson'],
-    rating: 4.9,
-    views: 1560,
-    featured: false
-  },
-  {
-    id: '3',
-    title: 'AI & Machine Learning Conference',
-    description: 'Explore the latest advancements in AI and ML with leading researchers and practitioners.',
-    date: '2024-03-25',
-    startTime: '10:00',
-    endTime: '19:00',
-    location: 'New York, NY',
-    mode: 'hybrid',
-    category: 'Artificial Intelligence',
-    type: 'conference',
-    price: 199,
-    currency: 'USD',
-    maxAttendees: 300,
-    currentAttendees: 267,
-    tags: ['Machine Learning', 'Deep Learning', 'AI Ethics', 'Computer Vision'],
-    organizer: 'AI Research Hub',
-    speakers: ['Dr. Emily Chen', 'Prof. Robert Lee', 'Lisa Anderson'],
-    rating: 4.7,
-    views: 1890,
-    featured: true
-  },
-  {
-    id: '4',
-    title: 'DevOps Best Practices Webinar',
-    description: 'Learn essential DevOps practices and tools for modern software development.',
-    date: '2024-03-28',
-    startTime: '16:00',
-    endTime: '17:30',
-    location: 'Online',
-    mode: 'online',
-    category: 'DevOps',
-    type: 'webinar',
-    price: 0,
-    currency: 'USD',
-    maxAttendees: 1000,
-    currentAttendees: 534,
-    tags: ['DevOps', 'CI/CD', 'Docker', 'Kubernetes'],
-    organizer: 'DevOps Community',
-    speakers: ['Tom Harris'],
-    rating: 4.5,
-    views: 980,
-    featured: false
-  },
-  {
-    id: '5',
-    title: 'Startup Pitch Night',
-    description: 'Watch innovative startups pitch their ideas to investors and industry experts.',
-    date: '2024-04-02',
-    startTime: '18:00',
-    endTime: '21:00',
-    location: 'Austin, TX',
-    mode: 'offline',
-    category: 'Startup',
-    type: 'meetup',
-    price: 25,
-    currency: 'USD',
-    maxAttendees: 200,
-    currentAttendees: 156,
-    tags: ['Startup', 'Pitching', 'Investment', 'Networking'],
-    organizer: 'Startup Hub',
-    speakers: ['Various Founders'],
-    rating: 4.6,
-    views: 1230,
-    featured: false
-  },
-  {
-    id: '6',
-    title: 'Cloud Architecture Masterclass',
-    description: 'Master cloud architecture patterns and best practices for scalable applications.',
-    date: '2024-04-05',
-    startTime: '09:00',
-    endTime: '13:00',
-    location: 'Online',
-    mode: 'online',
-    category: 'Cloud Computing',
-    type: 'workshop',
-    price: 89,
-    currency: 'USD',
-    maxAttendees: 150,
-    currentAttendees: 98,
-    tags: ['Cloud', 'AWS', 'Azure', 'Architecture'],
-    organizer: 'Cloud Experts',
-    speakers: ['David Brown', 'Jennifer White'],
-    rating: 4.8,
-    views: 1450,
-    featured: true
-  }
-];
-
 export default function EventsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -196,7 +61,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [isVisible, setIsVisible] = useState({});
+  const [isVisible, setIsVisible] = useState<Record<string, boolean>>({});
   const heroRef = useRef(null);
   const statsRef = useRef(null);
   const filtersRef = useRef(null);
@@ -238,53 +103,18 @@ export default function EventsPage() {
   }, []);
 
   const categories = ['all', 'Technology', 'Development', 'Artificial Intelligence', 'DevOps', 'Startup', 'Cloud Computing'];
-  const types = ['all', 'conference', 'workshop', 'meetup', 'webinar', 'summit'];
-  const modes = ['all', 'online', 'offline', 'hybrid'];
+  const types = ['all', 'WORKSHOP', 'SEMINAR', 'NETWORKING', 'COMPETITION', 'SOCIAL'];
+  const modes = ['all', 'online', 'offline'];
   const priceRanges = ['all', 'free', 'paid', 'premium'];
 
-  useEffect(() => {
-    let filtered = mockEvents.filter(event => {
-      const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           event.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesCategory = selectedCategory === 'all' || event.category === selectedCategory;
-      const matchesType = selectedType === 'all' || event.type === selectedType;
-      const matchesMode = selectedMode === 'all' || event.mode === selectedMode;
-      
-      let matchesPrice = true;
-      if (selectedPrice === 'free') matchesPrice = event.price === 0;
-      else if (selectedPrice === 'paid') matchesPrice = event.price > 0 && event.price < 100;
-      else if (selectedPrice === 'premium') matchesPrice = event.price >= 100;
-      
-      return matchesSearch && matchesCategory && matchesType && matchesMode && matchesPrice;
-    });
-
-    // Sort events
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case 'date':
-          return new Date(a.date).getTime() - new Date(b.date).getTime();
-        case 'price':
-          return a.price - b.price;
-        case 'popularity':
-          return b.currentAttendees - a.currentAttendees;
-        case 'rating':
-          return b.rating - a.rating;
-        default:
-          return 0;
-      }
-    });
-
-    setEvents(filtered);
-  }, [searchTerm, selectedCategory, selectedType, selectedMode, selectedPrice, sortBy]);
-
   const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'conference': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 'workshop': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'meetup': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
-      case 'webinar': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-      case 'summit': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+    const upperType = type?.toUpperCase();
+    switch (upperType) {
+      case 'WORKSHOP': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'SEMINAR': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'NETWORKING': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'COMPETITION': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      case 'SOCIAL': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
     }
   };
@@ -519,10 +349,6 @@ export default function EventsPage() {
                       <Badge className={`${getTypeColor(event.type)} border-0`}>
                         {event.type}
                       </Badge>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                        <span className="text-sm font-medium">{event.rating}</span>
-                      </div>
                     </div>
                     <CardTitle className="text-xl line-clamp-2 group-hover:text-purple-600 transition-colors mb-2">
                       {event.title}
@@ -569,15 +395,6 @@ export default function EventsPage() {
                           +{event.tags.length - 4}
                         </Badge>
                       )}
-                    </div>
-
-                    {/* Speakers */}
-                    <div className="p-3 bg-muted/50 rounded-lg">
-                      <div className="text-xs text-muted-foreground mb-1">Speakers:</div>
-                      <div className="text-sm font-medium">
-                        {event.speakers.slice(0, 2).join(', ')}
-                        {event.speakers.length > 2 && ` +${event.speakers.length - 2} more`}
-                      </div>
                     </div>
 
                     {/* Price and Action */}
@@ -628,10 +445,6 @@ export default function EventsPage() {
                     <Badge className={`${getTypeColor(event.type)} border-0`}>
                       {event.type}
                     </Badge>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-medium">{event.rating}</span>
-                    </div>
                   </div>
                   <CardTitle className="text-lg line-clamp-2 group-hover:text-purple-600 transition-colors">
                     {event.title}

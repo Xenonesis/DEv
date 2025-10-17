@@ -3,6 +3,7 @@ import { setupSocket } from '@/lib/socket';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import next from 'next';
+import killPort from 'kill-port';
 
 const dev = process.env.NODE_ENV !== 'production';
 const currentPort = 3000;
@@ -11,6 +12,13 @@ const hostname = '127.0.0.1';
 // Custom server with Socket.IO integration
 async function createCustomServer() {
   try {
+    // Kill any existing process on the port
+    try {
+      await killPort(currentPort);
+      console.log(`> Cleared port ${currentPort}`);
+    } catch (err) {
+      // Port was already free, continue
+    }
     // Create Next.js app
     const nextApp = next({ 
       dev,
