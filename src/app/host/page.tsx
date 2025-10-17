@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
@@ -18,7 +18,8 @@ import {
     BarChart3,
     Brain,
     Code,
-    Smartphone
+    Smartphone,
+    Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +30,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
@@ -65,6 +67,12 @@ interface HostStats {
     completedHackathons: number;
 }
 
+const statusOptions = ['ALL', 'UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED'] as const;
+const difficultyOptions = ['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT'] as const;
+
+type StatusFilter = typeof statusOptions[number];
+type DifficultyFilter = typeof difficultyOptions[number];
+
 export default function HostPanel() {
     const { data: session, status } = useSession();
     const router = useRouter();
@@ -79,6 +87,10 @@ export default function HostPanel() {
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
     const [editingHackathon, setEditingHackathon] = useState<Hackathon | null>(null);
     const [viewingParticipants, setViewingParticipants] = useState<Hackathon | null>(null);
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+    const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('ALL');
 
     const [formData, setFormData] = useState({
         title: '',
@@ -201,7 +213,19 @@ export default function HostPanel() {
             startDate: new Date(hackathon.startDate).toISOString().slice(0, 16),
             endDate: new Date(hackathon.endDate).toISOString().slice(0, 16),
             difficulty: hackathon.difficulty,
-            tags: hackathon.tags ? JSON.parse(hackathon.tags).join(', ') : ''
+            tags: (() => {
+                if (!hackathon.tags) return '';
+
+                try {
+                    const parsed = JSON.parse(hackathon.tags);
+                    if (Array.isArray(parsed)) {
+                        return parsed.join(', ');
+                    }
+                    return parsed.toString();
+                } catch {
+                    return hackathon.tags;
+                }
+            })()
         });
         setIsCreateDialogOpen(true);
     };
@@ -240,6 +264,72 @@ export default function HostPanel() {
             difficulty: 'BEGINNER',
             tags: ''
         });
+    };
+
+    const filteredHackathons = useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLowerCase();
+
+        return hackathons
+            .filter((hackathon) => {
+                if (!normalizedSearch) return true;
+
+                const searchableFields = [
+                    hackathon.title,
+                    hackathon.theme,
+                    hackathon.description,
+                    hackathon.prize,
+                    hackathon.tags
+                ]
+                    .filter(Boolean)
+                    .map((value) => value!.toString().toLowerCase());
+
+                return searchableFields.some((field) => field.includes(normalizedSearch));
+            })
+            .filter((hackathon) => statusFilter === 'ALL' || hackathon.status === statusFilter)
+            .filter((hackathon) => difficultyFilter === 'ALL' || hackathon.difficulty === difficultyFilter)
+            .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    }, [hackathons, searchTerm, statusFilter, difficultyFilter]);
+
+    const filteredSummary = useMemo(() => {
+        if (filteredHackathons.length === 0) {
+            return {
+                active: 0,
+                upcoming: 0,
+                averageParticipants: 0,
+                completionRate: 0
+            };
+        }
+
+        const active = filteredHackathons.filter((hackathon) => hackathon.status === 'ONGOING').length;
+        const upcoming = filteredHackathons.filter((hackathon) => hackathon.status === 'UPCOMING').length;
+        const totalParticipants = filteredHackathons.reduce((acc, hackathon) => acc + (hackathon.participantCount ?? 0), 0);
+        const averageParticipants = filteredHackathons.length
+            ? Math.round(totalParticipants / filteredHackathons.length)
+            : 0;
+        const completionRate = filteredHackathons.length
+            ? Math.round(
+                (filteredHackathons.filter((hackathon) => hackathon.status === 'COMPLETED').length /
+                    filteredHackathons.length) *
+                    100
+            )
+            : 0;
+
+        return {
+            active,
+            upcoming,
+            averageParticipants,
+            completionRate
+        };
+    }, [filteredHackathons]);
+
+    const hasFiltersApplied = useMemo(() => {
+        return statusFilter !== 'ALL' || difficultyFilter !== 'ALL' || searchTerm.trim() !== '';
+    }, [statusFilter, difficultyFilter, searchTerm]);
+
+    const resetFilters = () => {
+        setSearchTerm('');
+        setStatusFilter('ALL');
+        setDifficultyFilter('ALL');
     };
 
     const getStatusColor = (status: string) => {
@@ -527,88 +617,260 @@ export default function HostPanel() {
 
                 {/* Hackathons Table */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Your Hackathons</CardTitle>
-                        <CardDescription>
-                            Manage and monitor your hosted hackathons
-                        </CardDescription>
+                    <CardHeader className="space-y-4">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <CardTitle>Your Hackathons</CardTitle>
+                                <CardDescription>Manage and monitor every competition in one place</CardDescription>
+                            </div>
+                            {hasFiltersApplied && (
+                                <Button size="sm" variant="ghost" onClick={resetFilters}>
+                                    Reset filters
+                                </Button>
+                            )}
+                        </div>
+                        <div className="grid gap-4 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                    placeholder="Search by title, theme or description"
+                                    className="pl-9"
+                                />
+                            </div>
+                            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {statusOptions.map((option) => (
+                                        <SelectItem key={option} value={option}>
+                                            {option === 'ALL' ? 'All statuses' : option.charAt(0) + option.slice(1).toLowerCase()}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <Select
+                                value={difficultyFilter}
+                                onValueChange={(value) => setDifficultyFilter(value as DifficultyFilter)}
+                            >
+                                <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Difficulty" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {difficultyOptions.map((option) => (
+                                        <SelectItem key={option} value={option}>
+                                            {option === 'ALL'
+                                                ? 'All difficulties'
+                                                : option.charAt(0) + option.slice(1).toLowerCase()}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="rounded-lg border bg-muted/40 p-4">
+                                <p className="text-xs text-muted-foreground">Active events</p>
+                                <p className="text-xl font-semibold">{filteredSummary.active}</p>
+                            </div>
+                            <div className="rounded-lg border bg-muted/40 p-4">
+                                <p className="text-xs text-muted-foreground">Upcoming events</p>
+                                <p className="text-xl font-semibold">{filteredSummary.upcoming}</p>
+                            </div>
+                            <div className="rounded-lg border bg-muted/40 p-4">
+                                <p className="text-xs text-muted-foreground">Avg. participants</p>
+                                <p className="text-xl font-semibold">{filteredSummary.averageParticipants}</p>
+                            </div>
+                            <div className="rounded-lg border bg-muted/40 p-4">
+                                <p className="text-xs text-muted-foreground">Completion rate</p>
+                                <p className="text-xl font-semibold">{filteredSummary.completionRate}%</p>
+                            </div>
+                        </div>
                     </CardHeader>
-                    <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Title</TableHead>
-                                    <TableHead>Theme</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead>Participants</TableHead>
-                                    <TableHead>Start Date</TableHead>
-                                    <TableHead>End Date</TableHead>
-                                    <TableHead>Actions</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {hackathons.map((hackathon) => (
-                                    <TableRow key={hackathon.id}>
-                                        <TableCell className="font-medium">{hackathon.title}</TableCell>
-                                        <TableCell>{hackathon.theme}</TableCell>
-                                        <TableCell>
-                                            <Badge className={getStatusColor(hackathon.status)}>
-                                                {hackathon.status}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell>
-                                            {hackathon.participantCount || 0}
-                                            {hackathon.maxParticipants && ` / ${hackathon.maxParticipants}`}
-                                        </TableCell>
-                                        <TableCell>
-                                            {new Date(hackathon.startDate).toLocaleDateString()}
-                                        </TableCell>
-                                        <TableCell>
-                                            {new Date(hackathon.endDate).toLocaleDateString()}
-                                        </TableCell>
-                                        <TableCell>
-                                            <div className="flex space-x-2">
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => setViewingParticipants(hackathon)}
-                                                    title="View Participants"
-                                                >
-                                                    <Users className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => router.push(`/hackathons/${hackathon.id}`)}
-                                                    title="View Details"
-                                                >
-                                                    <Eye className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => handleEdit(hackathon)}
-                                                    title="Edit"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="destructive"
-                                                    onClick={() => handleDelete(hackathon.id)}
-                                                    title="Delete"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </Button>
+                    <CardContent className="space-y-4">
+                        <Tabs defaultValue="list" className="space-y-4">
+                            <TabsList className="grid w-full grid-cols-2 sm:w-auto">
+                                <TabsTrigger value="list">List view</TabsTrigger>
+                                <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="list" className="space-y-4">
+                                {filteredHackathons.length > 0 ? (
+                                    <ScrollArea className="-mx-4 sm:mx-0">
+                                        <div className="min-w-[720px] px-4 sm:px-0">
+                                            <Table>
+                                                <TableHeader>
+                                                    <TableRow>
+                                                        <TableHead>Title</TableHead>
+                                                        <TableHead>Theme</TableHead>
+                                                        <TableHead>Status</TableHead>
+                                                        <TableHead>Difficulty</TableHead>
+                                                        <TableHead>Participants</TableHead>
+                                                        <TableHead>Start</TableHead>
+                                                        <TableHead>End</TableHead>
+                                                        <TableHead>Actions</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {filteredHackathons.map((hackathon) => (
+                                                        <TableRow key={hackathon.id}>
+                                                            <TableCell className="font-medium">{hackathon.title}</TableCell>
+                                                            <TableCell className="text-muted-foreground">{hackathon.theme}</TableCell>
+                                                            <TableCell>
+                                                                <Badge className={getStatusColor(hackathon.status)}>
+                                                                    {hackathon.status}
+                                                                </Badge>
+                                                            </TableCell>
+                                                            <TableCell className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                                {hackathon.difficulty}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {hackathon.participantCount || 0}
+                                                                {hackathon.maxParticipants && ` / ${hackathon.maxParticipants}`}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {new Date(hackathon.startDate).toLocaleDateString()}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                {new Date(hackathon.endDate).toLocaleDateString()}
+                                                            </TableCell>
+                                                            <TableCell>
+                                                                <div className="flex flex-wrap gap-2">
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => setViewingParticipants(hackathon)}
+                                                                        title="View Participants"
+                                                                    >
+                                                                        <Users className="w-4 h-4" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => router.push(`/hackathons/${hackathon.id}`)}
+                                                                        title="View Details"
+                                                                    >
+                                                                        <Eye className="w-4 h-4" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() => handleEdit(hackathon)}
+                                                                        title="Edit"
+                                                                    >
+                                                                        <Edit className="w-4 h-4" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="destructive"
+                                                                        onClick={() => handleDelete(hackathon.id)}
+                                                                        title="Delete"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    </ScrollArea>
+                                ) : (
+                                    <div className="rounded-lg border border-dashed py-16 text-center text-muted-foreground">
+                                        <p className="text-lg font-semibold">No hackathons match your filters</p>
+                                        <p className="text-sm">Try adjusting the filters or create a new hackathon to get started.</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+                            <TabsContent value="timeline" className="space-y-4">
+                                {filteredHackathons.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {filteredHackathons.map((hackathon) => (
+                                            <div
+                                                key={`${hackathon.id}-timeline`}
+                                                className="rounded-xl border bg-muted/30 p-4 shadow-sm transition-colors hover:bg-muted/50"
+                                            >
+                                                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                                                    <div className="space-y-3">
+                                                        <div className="flex flex-wrap items-center gap-3">
+                                                            <Badge className={getStatusColor(hackathon.status)}>
+                                                                {hackathon.status}
+                                                            </Badge>
+                                                            <span className="text-xs uppercase tracking-wide text-muted-foreground">
+                                                                {hackathon.difficulty}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-lg font-semibold">{hackathon.title}</h3>
+                                                            <p className="text-sm text-muted-foreground">{hackathon.theme}</p>
+                                                        </div>
+                                                        {hackathon.description && (
+                                                            <p className="text-sm text-muted-foreground line-clamp-2">
+                                                                {hackathon.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex flex-col gap-3 text-sm text-muted-foreground md:items-end">
+                                                        <div className="flex items-center gap-2">
+                                                            <Clock className="h-4 w-4" />
+                                                            <span>
+                                                                {new Date(hackathon.startDate).toLocaleDateString()} –{' '}
+                                                                {new Date(hackathon.endDate).toLocaleDateString()}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            <Users className="h-4 w-4" />
+                                                            <span>
+                                                                {hackathon.participantCount || 0}
+                                                                {hackathon.maxParticipants && ` / ${hackathon.maxParticipants}`}
+                                                                {' '}participants
+                                                            </span>
+                                                        </div>
+                                                        {hackathon.prize && (
+                                                            <div className="flex items-center gap-2">
+                                                                <Trophy className="h-4 w-4" />
+                                                                <span>{hackathon.prize}</span>
+                                                            </div>
+                                                        )}
+                                                        <div className="flex items-center gap-2">
+                                                            <BarChart3 className="h-4 w-4" />
+                                                            <span>
+                                                                {hackathon.participants?.length || 0} team(s) engaged
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className="mt-4 flex flex-wrap gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => setViewingParticipants(hackathon)}
+                                                    >
+                                                        View participants
+                                                    </Button>
+                                                    <Button size="sm" variant="outline" onClick={() => handleEdit(hackathon)}>
+                                                        Edit details
+                                                    </Button>
+                                                    <Button size="sm" onClick={() => router.push(`/hackathons/${hackathon.id}`)}>
+                                                        Open event page
+                                                    </Button>
+                                                </div>
                                             </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                        {hackathons.length === 0 && (
-                            <div className="text-center py-8 text-muted-foreground">
-                                No hackathons created yet. Create your first hackathon to get started!
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="rounded-lg border border-dashed py-16 text-center text-muted-foreground">
+                                        <p className="text-lg font-semibold">No timeline items to show</p>
+                                        <p className="text-sm">Adjust your filters or create a new hackathon to populate the timeline.</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+                        </Tabs>
+                        {hackathons.length === 0 && !hasFiltersApplied && (
+                            <div className="rounded-lg border border-dashed py-16 text-center text-muted-foreground">
+                                <p className="text-lg font-semibold">You haven't created any hackathons yet</p>
+                                <p className="text-sm">Use the "Create Hackathon" button above to launch your first event.</p>
                             </div>
                         )}
                     </CardContent>
