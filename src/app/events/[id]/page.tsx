@@ -200,11 +200,40 @@ export default function EventDetailPage() {
   };
 
   const isEventFull = () => {
-    return event && event.currentAttendees >= event.maxAttendees;
+    return !!event && event.currentAttendees >= event.maxAttendees;
   };
 
   const isEventPast = () => {
-    return event && new Date(event.date) < new Date();
+    return !!event && new Date(event.date) < new Date();
+  };
+
+  const handleShare = async () => {
+    if (!event) return;
+
+    const shareData = {
+      title: event.title,
+      text: event.description,
+      url: typeof window !== 'undefined' ? window.location.href : ''
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success('Event shared successfully');
+        return;
+      }
+
+      if (navigator.clipboard && shareData.url) {
+        await navigator.clipboard.writeText(shareData.url);
+        toast.success('Event link copied to clipboard');
+        return;
+      }
+
+      toast.error('Sharing is not supported on this device');
+    } catch (error) {
+      console.error('Error sharing event:', error);
+      toast.error('Failed to share event');
+    }
   };
 
   if (isLoading) {
@@ -527,7 +556,7 @@ export default function EventDetailPage() {
                   <CardTitle>Share</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full" onClick={handleShare}>
                     <Share2 className="w-4 h-4 mr-2" />
                     Share Event
                   </Button>
