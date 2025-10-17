@@ -17,7 +17,8 @@ import {
     Activity,
     BarChart3,
     Brain,
-    Code
+    Code,
+    Smartphone
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -496,6 +497,29 @@ export default function HostPanel() {
                                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                             >
                                 Manage Web Contests
+                            </Button>
+                        </div>
+                    </CardHeader>
+                </Card>
+
+                {/* Mobile Innovation Quick Access */}
+                <Card className="mb-8 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/20 dark:to-blue-950/20 border-cyan-200 dark:border-cyan-800">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg">
+                                    <Smartphone className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle>Mobile Innovation Management</CardTitle>
+                                    <CardDescription>Create and manage mobile app innovation challenges</CardDescription>
+                                </div>
+                            </div>
+                            <Button 
+                                onClick={() => router.push('/host/mobile-innovation')}
+                                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
+                            >
+                                Manage Mobile Innovation
                             </Button>
                         </div>
                     </CardHeader>
