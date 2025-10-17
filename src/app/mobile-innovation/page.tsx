@@ -104,6 +104,18 @@ export default function MobileInnovationPage() {
   const featuredInnovations = innovations.filter(i => i.featured);
   const regularInnovations = innovations.filter(i => !i.featured);
 
+  // Deterministic values for animated background (prevents hydration mismatch)
+  const floatingElements = [
+    { width: 120, height: 100, left: 10, top: 20, delay: 0, duration: 15 },
+    { width: 80, height: 90, left: 70, top: 10, delay: 2, duration: 18 },
+    { width: 150, height: 130, left: 30, top: 60, delay: 1, duration: 20 },
+    { width: 100, height: 110, left: 85, top: 40, delay: 3, duration: 16 },
+    { width: 90, height: 95, left: 50, top: 80, delay: 1.5, duration: 19 },
+    { width: 110, height: 105, left: 15, top: 50, delay: 2.5, duration: 17 },
+    { width: 130, height: 120, left: 60, top: 30, delay: 0.5, duration: 21 },
+    { width: 95, height: 85, left: 40, top: 70, delay: 3.5, duration: 14 }
+  ];
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       <Navbar />
@@ -111,17 +123,17 @@ export default function MobileInnovationPage() {
       {/* Hero Section */}
       <section className="pt-20 pb-16 bg-gradient-to-br from-blue-50 via-background to-cyan-50 dark:from-blue-950/20 dark:via-background dark:to-cyan-950/50 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(8)].map((_, i) => (
+          {floatingElements.map((element, i) => (
             <div
               key={i}
               className="absolute animate-float rounded-full bg-gradient-to-r from-blue-400/10 to-cyan-400/10 blur-sm"
               style={{
-                width: Math.random() * 150 + 50 + 'px',
-                height: Math.random() * 150 + 50 + 'px',
-                left: Math.random() * 100 + '%',
-                top: Math.random() * 100 + '%',
-                animationDelay: Math.random() * 5 + 's',
-                animationDuration: Math.random() * 10 + 10 + 's'
+                width: `${element.width}px`,
+                height: `${element.height}px`,
+                left: `${element.left}%`,
+                top: `${element.top}%`,
+                animationDelay: `${element.delay}s`,
+                animationDuration: `${element.duration}s`
               }}
             />
           ))}
