@@ -3,26 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import {
-    Calendar,
-    Plus,
-    Edit,
-    Trash2,
-    Users,
-    Trophy,
-    Clock,
-    MapPin,
-    Eye,
-    Settings,
-    Activity,
-    BarChart3,
-    Brain,
-    Code
-} from 'lucide-react';
+import { Code, Plus, Edit, Trash2, Users, Trophy, Eye, Activity, BarChart3, ArrowLeft, Globe, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -31,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
-interface Hackathon {
+interface WebContest {
     id: string;
     title: string;
     description: string;
@@ -41,43 +25,21 @@ interface Hackathon {
     startDate: string;
     endDate: string;
     status: 'UPCOMING' | 'ONGOING' | 'COMPLETED' | 'CANCELLED';
-    imageUrl?: string;
-    tags?: string;
     difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+    requirements?: string;
+    judgingCriteria?: string;
+    submissionUrl?: string;
     participantCount?: number;
-    participants?: Array<{
-        id: string;
-        user: {
-            id: string;
-            name: string;
-            email: string;
-            avatar?: string;
-        };
-        registeredAt: string;
-    }>;
+    submissionCount?: number;
 }
 
-interface HostStats {
-    totalHackathons: number;
-    activeHackathons: number;
-    totalParticipants: number;
-    completedHackathons: number;
-}
-
-export default function HostPanel() {
+export default function HostWebContestsPage() {
     const { data: session, status } = useSession();
     const router = useRouter();
-    const [hackathons, setHackathons] = useState<Hackathon[]>([]);
-    const [stats, setStats] = useState<HostStats>({
-        totalHackathons: 0,
-        activeHackathons: 0,
-        totalParticipants: 0,
-        completedHackathons: 0
-    });
+    const [contests, setContests] = useState<WebContest[]>([]);
     const [loading, setLoading] = useState(true);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-    const [editingHackathon, setEditingHackathon] = useState<Hackathon | null>(null);
-    const [viewingParticipants, setViewingParticipants] = useState<Hackathon | null>(null);
+    const [editingContest, setEditingContest] = useState<WebContest | null>(null);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -87,18 +49,19 @@ export default function HostPanel() {
         maxParticipants: '',
         startDate: '',
         endDate: '',
-        difficulty: 'BEGINNER' as const,
-        tags: ''
+        difficulty: 'BEGINNER',
+        tags: '',
+        requirements: '',
+        judgingCriteria: '',
+        submissionUrl: ''
     });
 
     useEffect(() => {
         if (status === 'loading') return;
-
         if (!session) {
             router.push('/auth/signin');
             return;
         }
-
         checkHostAccess();
     }, [session, status, router]);
 
@@ -108,16 +71,12 @@ export default function HostPanel() {
             const data = await response.json();
 
             if (!data.success || !data.isHost) {
-                if (data.needsApproval) {
-                    toast.error('Your host application is pending approval. Please wait for admin approval.');
-                } else {
-                    toast.error('Host privileges required. Please apply for host access.');
-                }
+                toast.error('Host privileges required');
                 router.push('/');
                 return;
             }
 
-            loadData();
+            loadContests();
         } catch (error) {
             console.error('Error checking host access:', error);
             toast.error('Error checking permissions');
@@ -125,28 +84,18 @@ export default function HostPanel() {
         }
     };
 
-    const loadData = async () => {
+    const loadContests = async () => {
         try {
             setLoading(true);
+            const response = await fetch('/api/host/web-contests');
+            const data = await response.json();
 
-            const [hackathonsResponse, statsResponse] = await Promise.all([
-                fetch('/api/host/hackathons'),
-                fetch('/api/host/stats')
-            ]);
-
-            const hackathonsData = await hackathonsResponse.json();
-            const statsData = await statsResponse.json();
-
-            if (hackathonsData.success) {
-                setHackathons(hackathonsData.data);
-            }
-
-            if (statsData.success) {
-                setStats(statsData.data);
+            if (data.success) {
+                setContests(data.data);
             }
         } catch (error) {
-            console.error('Error loading data:', error);
-            toast.error('Error loading host data');
+            console.error('Error loading contests:', error);
+            toast.error('Error loading web contests');
         } finally {
             setLoading(false);
         }
@@ -156,11 +105,11 @@ export default function HostPanel() {
         e.preventDefault();
 
         try {
-            const url = editingHackathon
-                ? `/api/host/hackathons/${editingHackathon.id}`
-                : '/api/host/hackathons';
+            const url = editingContest
+                ? `/api/host/web-contests/${editingContest.id}`
+                : '/api/host/web-contests';
 
-            const method = editingHackathon ? 'PUT' : 'POST';
+            const method = editingContest ? 'PUT' : 'POST';
 
             const response = await fetch(url, {
                 method,
@@ -175,55 +124,58 @@ export default function HostPanel() {
             const data = await response.json();
 
             if (data.success) {
-                toast.success(editingHackathon ? 'Hackathon updated successfully' : 'Hackathon created successfully');
+                toast.success(editingContest ? 'Web Contest updated' : 'Web Contest created');
                 setIsCreateDialogOpen(false);
-                setEditingHackathon(null);
+                setEditingContest(null);
                 resetForm();
-                loadData();
+                loadContests();
             } else {
-                toast.error(data.error || 'Failed to save hackathon');
+                toast.error(data.error || 'Failed to save contest');
             }
         } catch (error) {
-            console.error('Error saving hackathon:', error);
-            toast.error('Error saving hackathon');
+            console.error('Error saving contest:', error);
+            toast.error('Error saving contest');
         }
     };
 
-    const handleEdit = (hackathon: Hackathon) => {
-        setEditingHackathon(hackathon);
+    const handleEdit = (contest: WebContest) => {
+        setEditingContest(contest);
         setFormData({
-            title: hackathon.title,
-            description: hackathon.description,
-            theme: hackathon.theme,
-            prize: hackathon.prize || '',
-            maxParticipants: hackathon.maxParticipants?.toString() || '',
-            startDate: new Date(hackathon.startDate).toISOString().slice(0, 16),
-            endDate: new Date(hackathon.endDate).toISOString().slice(0, 16),
-            difficulty: hackathon.difficulty,
-            tags: hackathon.tags ? JSON.parse(hackathon.tags).join(', ') : ''
+            title: contest.title,
+            description: contest.description,
+            theme: contest.theme,
+            prize: contest.prize || '',
+            maxParticipants: contest.maxParticipants?.toString() || '',
+            startDate: new Date(contest.startDate).toISOString().slice(0, 16),
+            endDate: new Date(contest.endDate).toISOString().slice(0, 16),
+            difficulty: contest.difficulty,
+            tags: '',
+            requirements: contest.requirements || '',
+            judgingCriteria: contest.judgingCriteria || '',
+            submissionUrl: contest.submissionUrl || ''
         });
         setIsCreateDialogOpen(true);
     };
 
-    const handleDelete = async (hackathonId: string) => {
-        if (!confirm('Are you sure you want to delete this hackathon?')) return;
+    const handleDelete = async (contestId: string) => {
+        if (!confirm('Are you sure you want to delete this web contest?')) return;
 
         try {
-            const response = await fetch(`/api/host/hackathons/${hackathonId}`, {
+            const response = await fetch(`/api/host/web-contests/${contestId}`, {
                 method: 'DELETE'
             });
 
             const data = await response.json();
 
             if (data.success) {
-                toast.success('Hackathon deleted successfully');
-                loadData();
+                toast.success('Web Contest deleted');
+                loadContests();
             } else {
-                toast.error(data.error || 'Failed to delete hackathon');
+                toast.error(data.error || 'Failed to delete');
             }
         } catch (error) {
-            console.error('Error deleting hackathon:', error);
-            toast.error('Error deleting hackathon');
+            console.error('Error deleting contest:', error);
+            toast.error('Error deleting contest');
         }
     };
 
@@ -237,7 +189,10 @@ export default function HostPanel() {
             startDate: '',
             endDate: '',
             difficulty: 'BEGINNER',
-            tags: ''
+            tags: '',
+            requirements: '',
+            judgingCriteria: '',
+            submissionUrl: ''
         });
     };
 
@@ -256,7 +211,7 @@ export default function HostPanel() {
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="text-center">
                     <Activity className="w-8 h-8 animate-spin mx-auto mb-4" />
-                    <p>Loading host panel...</p>
+                    <p>Loading web contests...</p>
                 </div>
             </div>
         );
@@ -268,25 +223,28 @@ export default function HostPanel() {
             <div className="border-b border-border bg-background/95 backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
-                        <div className="flex items-center">
-                            <Calendar className="w-8 h-8 text-purple-600 mr-3" />
-                            <h1 className="text-2xl font-bold">Host Panel</h1>
+                        <div className="flex items-center gap-4">
+                            <Button variant="ghost" size="icon" onClick={() => router.push('/host')}>
+                                <ArrowLeft className="w-5 h-5" />
+                            </Button>
+                            <Code className="w-8 h-8 text-purple-600" />
+                            <h1 className="text-2xl font-bold">Web Contests Management</h1>
                         </div>
                         <div className="flex items-center space-x-4">
                             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                                 <DialogTrigger asChild>
-                                    <Button onClick={() => { resetForm(); setEditingHackathon(null); }}>
+                                    <Button onClick={() => { resetForm(); setEditingContest(null); }}>
                                         <Plus className="w-4 h-4 mr-2" />
-                                        Create Hackathon
+                                        Create Web Contest
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
+                                <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                                     <DialogHeader>
                                         <DialogTitle>
-                                            {editingHackathon ? 'Edit Hackathon' : 'Create New Hackathon'}
+                                            {editingContest ? 'Edit Web Contest' : 'Create New Web Contest'}
                                         </DialogTitle>
                                         <DialogDescription>
-                                            {editingHackathon ? 'Update hackathon details' : 'Fill in the details to create a new hackathon'}
+                                            {editingContest ? 'Update contest details' : 'Fill in the details to create a new web development contest'}
                                         </DialogDescription>
                                     </DialogHeader>
                                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -302,12 +260,19 @@ export default function HostPanel() {
                                             </div>
                                             <div>
                                                 <Label htmlFor="theme">Theme</Label>
-                                                <Input
-                                                    id="theme"
-                                                    value={formData.theme}
-                                                    onChange={(e) => setFormData({ ...formData, theme: e.target.value })}
-                                                    required
-                                                />
+                                                <Select value={formData.theme} onValueChange={(value) => setFormData({ ...formData, theme: value })}>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select theme" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="E-commerce">E-commerce</SelectItem>
+                                                        <SelectItem value="Portfolio">Portfolio</SelectItem>
+                                                        <SelectItem value="Dashboard">Dashboard</SelectItem>
+                                                        <SelectItem value="Landing Page">Landing Page</SelectItem>
+                                                        <SelectItem value="Blog">Blog</SelectItem>
+                                                        <SelectItem value="Social Media">Social Media</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                         </div>
 
@@ -318,6 +283,7 @@ export default function HostPanel() {
                                                 value={formData.description}
                                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                                 required
+                                                rows={3}
                                             />
                                         </div>
 
@@ -328,11 +294,11 @@ export default function HostPanel() {
                                                     id="prize"
                                                     value={formData.prize}
                                                     onChange={(e) => setFormData({ ...formData, prize: e.target.value })}
-                                                    placeholder="e.g., $1000 cash prize"
+                                                    placeholder="e.g., $5000"
                                                 />
                                             </div>
                                             <div>
-                                                <Label htmlFor="maxParticipants">Max Participants (Optional)</Label>
+                                                <Label htmlFor="maxParticipants">Max Participants</Label>
                                                 <Input
                                                     id="maxParticipants"
                                                     type="number"
@@ -369,7 +335,7 @@ export default function HostPanel() {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <Label htmlFor="difficulty">Difficulty</Label>
-                                                <Select value={formData.difficulty} onValueChange={(value: any) => setFormData({ ...formData, difficulty: value })}>
+                                                <Select value={formData.difficulty} onValueChange={(value) => setFormData({ ...formData, difficulty: value })}>
                                                     <SelectTrigger>
                                                         <SelectValue />
                                                     </SelectTrigger>
@@ -387,25 +353,55 @@ export default function HostPanel() {
                                                     id="tags"
                                                     value={formData.tags}
                                                     onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                                    placeholder="e.g., AI, Web Development, Mobile"
+                                                    placeholder="e.g., React, CSS, Responsive"
                                                 />
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-end space-x-2">
+                                        <div>
+                                            <Label htmlFor="requirements">Technical Requirements (Optional)</Label>
+                                            <Textarea
+                                                id="requirements"
+                                                value={formData.requirements}
+                                                onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
+                                                placeholder="Specify technical requirements, frameworks, or constraints"
+                                                rows={2}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="judgingCriteria">Judging Criteria (Optional)</Label>
+                                            <Textarea
+                                                id="judgingCriteria"
+                                                value={formData.judgingCriteria}
+                                                onChange={(e) => setFormData({ ...formData, judgingCriteria: e.target.value })}
+                                                placeholder="How will submissions be evaluated?"
+                                                rows={2}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <Label htmlFor="submissionUrl">Submission Instructions (Optional)</Label>
+                                            <Textarea
+                                                id="submissionUrl"
+                                                value={formData.submissionUrl}
+                                                onChange={(e) => setFormData({ ...formData, submissionUrl: e.target.value })}
+                                                placeholder="Instructions for submitting projects (e.g., GitHub repo + live URL)"
+                                                rows={2}
+                                            />
+                                        </div>
+
+                                        <div className="flex justify-end space-x-2 pt-4">
                                             <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                                                 Cancel
                                             </Button>
-                                            <Button type="submit">
-                                                {editingHackathon ? 'Update' : 'Create'} Hackathon
+                                            <Button type="submit" className="bg-gradient-to-r from-purple-600 to-pink-600">
+                                                {editingContest ? 'Update' : 'Create'} Contest
                                             </Button>
                                         </div>
                                     </form>
                                 </DialogContent>
                             </Dialog>
-                            <Button onClick={() => router.push('/')} variant="outline">
-                                Back to Home
-                            </Button>
                         </div>
                     </div>
                 </div>
@@ -416,21 +412,23 @@ export default function HostPanel() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Hackathons</CardTitle>
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium">Total Contests</CardTitle>
+                            <Code className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.totalHackathons}</div>
+                            <div className="text-2xl font-bold">{contests.length}</div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Active Hackathons</CardTitle>
+                            <CardTitle className="text-sm font-medium">Active Contests</CardTitle>
                             <Activity className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.activeHackathons}</div>
+                            <div className="text-2xl font-bold">
+                                {contests.filter(c => c.status === 'ONGOING' || c.status === 'UPCOMING').length}
+                            </div>
                         </CardContent>
                     </Card>
 
@@ -440,73 +438,31 @@ export default function HostPanel() {
                             <Users className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.totalParticipants}</div>
+                            <div className="text-2xl font-bold">
+                                {contests.reduce((sum, c) => sum + (c.participantCount || 0), 0)}
+                            </div>
                         </CardContent>
                     </Card>
 
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-                            <Trophy className="h-4 w-4 text-muted-foreground" />
+                            <CardTitle className="text-sm font-medium">Total Submissions</CardTitle>
+                            <BarChart3 className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{stats.completedHackathons}</div>
+                            <div className="text-2xl font-bold">
+                                {contests.reduce((sum, c) => sum + (c.submissionCount || 0), 0)}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* AI Challenges Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-                                    <Brain className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>AI Challenges Management</CardTitle>
-                                    <CardDescription>Create and manage AI/ML competitions</CardDescription>
-                                </div>
-                            </div>
-                            <Button 
-                                onClick={() => router.push('/host/ai-challenges')}
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                            >
-                                Manage AI Challenges
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Web Contests Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg">
-                                    <Code className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>Web Contests Management</CardTitle>
-                                    <CardDescription>Create and manage web development competitions</CardDescription>
-                                </div>
-                            </div>
-                            <Button 
-                                onClick={() => router.push('/host/web-contests')}
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                            >
-                                Manage Web Contests
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Hackathons Table */}
+                {/* Contests Table */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Your Hackathons</CardTitle>
+                        <CardTitle>Your Web Contests</CardTitle>
                         <CardDescription>
-                            Manage and monitor your hosted hackathons
+                            Manage and monitor your hosted web development contests
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -517,45 +473,40 @@ export default function HostPanel() {
                                     <TableHead>Theme</TableHead>
                                     <TableHead>Status</TableHead>
                                     <TableHead>Participants</TableHead>
+                                    <TableHead>Submissions</TableHead>
                                     <TableHead>Start Date</TableHead>
-                                    <TableHead>End Date</TableHead>
                                     <TableHead>Actions</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {hackathons.map((hackathon) => (
-                                    <TableRow key={hackathon.id}>
-                                        <TableCell className="font-medium">{hackathon.title}</TableCell>
-                                        <TableCell>{hackathon.theme}</TableCell>
+                                {contests.map((contest) => (
+                                    <TableRow key={contest.id}>
+                                        <TableCell className="font-medium">{contest.title}</TableCell>
                                         <TableCell>
-                                            <Badge className={getStatusColor(hackathon.status)}>
-                                                {hackathon.status}
+                                            <Badge variant="outline" className="gap-1">
+                                                <Globe className="w-3 h-3" />
+                                                {contest.theme}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {hackathon.participantCount || 0}
-                                            {hackathon.maxParticipants && ` / ${hackathon.maxParticipants}`}
+                                            <Badge className={getStatusColor(contest.status)}>
+                                                {contest.status}
+                                            </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            {new Date(hackathon.startDate).toLocaleDateString()}
+                                            {contest.participantCount || 0}
+                                            {contest.maxParticipants && ` / ${contest.maxParticipants}`}
                                         </TableCell>
+                                        <TableCell>{contest.submissionCount || 0}</TableCell>
                                         <TableCell>
-                                            {new Date(hackathon.endDate).toLocaleDateString()}
+                                            {new Date(contest.startDate).toLocaleDateString()}
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex space-x-2">
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => setViewingParticipants(hackathon)}
-                                                    title="View Participants"
-                                                >
-                                                    <Users className="w-4 h-4" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    onClick={() => router.push(`/hackathons/${hackathon.id}`)}
+                                                    onClick={() => router.push(`/web-contests/${contest.id}`)}
                                                     title="View Details"
                                                 >
                                                     <Eye className="w-4 h-4" />
@@ -563,7 +514,7 @@ export default function HostPanel() {
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
-                                                    onClick={() => handleEdit(hackathon)}
+                                                    onClick={() => handleEdit(contest)}
                                                     title="Edit"
                                                 >
                                                     <Edit className="w-4 h-4" />
@@ -571,7 +522,7 @@ export default function HostPanel() {
                                                 <Button
                                                     size="sm"
                                                     variant="destructive"
-                                                    onClick={() => handleDelete(hackathon.id)}
+                                                    onClick={() => handleDelete(contest.id)}
                                                     title="Delete"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -582,60 +533,16 @@ export default function HostPanel() {
                                 ))}
                             </TableBody>
                         </Table>
-                        {hackathons.length === 0 && (
-                            <div className="text-center py-8 text-muted-foreground">
-                                No hackathons created yet. Create your first hackathon to get started!
+                        {contests.length === 0 && (
+                            <div className="text-center py-12 text-muted-foreground">
+                                <Code className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                <p className="text-lg font-medium mb-2">No web contests created yet</p>
+                                <p className="text-sm">Create your first web development contest to get started!</p>
                             </div>
                         )}
                     </CardContent>
                 </Card>
             </div>
-
-            {/* Participants Dialog */}
-            <Dialog open={!!viewingParticipants} onOpenChange={() => setViewingParticipants(null)}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Participants - {viewingParticipants?.title}</DialogTitle>
-                        <DialogDescription>
-                            {viewingParticipants?.participantCount || 0} participant(s) registered
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="max-h-[400px] overflow-y-auto">
-                        {viewingParticipants?.participants && viewingParticipants.participants.length > 0 ? (
-                            <div className="space-y-3">
-                                {viewingParticipants.participants.map((participant) => (
-                                    <div
-                                        key={participant.id}
-                                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center text-purple-600 dark:text-purple-400 font-semibold">
-                                                {participant.user.name?.charAt(0).toUpperCase() || 'U'}
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold">{participant.user.name}</p>
-                                                <p className="text-sm text-muted-foreground">{participant.user.email}</p>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-xs text-muted-foreground">Registered</p>
-                                            <p className="text-sm">
-                                                {new Date(participant.registeredAt).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                <p>No participants yet</p>
-                                <p className="text-sm">Be patient, registrations will come!</p>
-                            </div>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }
