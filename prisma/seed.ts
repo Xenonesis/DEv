@@ -64,59 +64,15 @@ async function main() {
 
   console.log('✅ Created users')
 
+  // Clear existing events and related registrations so hosts start fresh
+  await prisma.eventParticipant.deleteMany()
+  await prisma.event.deleteMany()
+
   // No mock hackathons - hosts will create them dynamically
 
   const hackathons: any[] = []
 
   console.log('✅ Skipped mock hackathons (hosts will create them)')
-
-  // Create events
-  const events = await Promise.all([
-    prisma.event.create({
-      data: {
-        title: 'React Advanced Patterns Workshop',
-        description: 'Learn advanced React patterns and best practices',
-        type: EventType.WORKSHOP,
-        date: new Date('2024-02-25T14:00:00Z'),
-        duration: 120,
-        location: 'NeoFest Main Hall',
-        isOnline: false,
-        maxAttendees: 50,
-        imageUrl: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=400&fit=crop',
-        tags: JSON.stringify(['React', 'JavaScript', 'Frontend', 'Workshop'])
-      }
-    }),
-    prisma.event.create({
-      data: {
-        title: 'AI in Industry Seminar',
-        description: 'Explore how AI is transforming various industries',
-        type: EventType.SEMINAR,
-        date: new Date('2024-02-28T16:00:00Z'),
-        duration: 90,
-        location: 'Online',
-        isOnline: true,
-        maxAttendees: 200,
-        imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=400&fit=crop',
-        tags: JSON.stringify(['AI', 'Industry', 'Innovation', 'Seminar'])
-      }
-    }),
-    prisma.event.create({
-      data: {
-        title: 'Developer Networking Night',
-        description: 'Connect with fellow developers and tech enthusiasts',
-        type: EventType.NETWORKING,
-        date: new Date('2024-03-01T18:00:00Z'),
-        duration: 180,
-        location: 'NeoFest Lounge',
-        isOnline: false,
-        maxAttendees: 100,
-        imageUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8753a9bb8?w=800&h=400&fit=crop',
-        tags: JSON.stringify(['Networking', 'Community', 'Social', 'Developers'])
-      }
-    })
-  ])
-
-  console.log('✅ Created events')
 
   // Create learning sessions
   const sessions = await Promise.all([
@@ -277,38 +233,8 @@ async function main() {
 
   console.log('✅ Created user achievements')
 
-  // No hackathon participants since there are no mock hackathons
-  console.log('✅ Skipped hackathon participants')
-
-  // Register users for events
-  await Promise.all([
-    prisma.eventParticipant.create({
-      data: {
-        eventId: events[0].id,
-        userId: users[0].id
-      }
-    }),
-    prisma.eventParticipant.create({
-      data: {
-        eventId: events[0].id,
-        userId: users[1].id
-      }
-    }),
-    prisma.eventParticipant.create({
-      data: {
-        eventId: events[1].id,
-        userId: users[2].id
-      }
-    }),
-    prisma.eventParticipant.create({
-      data: {
-        eventId: events[2].id,
-        userId: users[3].id
-      }
-    })
-  ])
-
-  console.log('✅ Registered users for events')
+  // No hackathon participants or mock events
+  console.log('✅ Skipped hackathon participants and mock events')
 
   // Enroll users in sessions
   await Promise.all([
@@ -346,7 +272,7 @@ async function main() {
   📊 Summary:
   - Users: ${users.length}
   - Hackathons: 0 (hosts will create them)
-  - Events: ${events.length}
+  - Events: 0 (hosts will create them)
   - Sessions: ${sessions.length}
   - Ideas: ${ideas.length}
   - Achievements: ${achievements.length}
