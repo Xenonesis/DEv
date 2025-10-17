@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Calendar, Clock, MapPin, Users, Ticket, Star, Filter, ChevronLeft, ChevronRight, Plus, Sparkles, Globe, Video, MapPin as MapPinIcon, Award, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -52,6 +53,7 @@ const fetchEvents = async (filters: any = {}) => {
 };
 
 export default function EventsPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
@@ -335,7 +337,11 @@ export default function EventsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {featuredEvents.map((event) => (
-                <Card key={event.id} className="group hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white/80 to-purple-50/50 dark:from-gray-900/80 dark:to-purple-950/20 backdrop-blur-lg border-0 overflow-hidden relative">
+                <Card 
+                  key={event.id} 
+                  className="group hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white/80 to-purple-50/50 dark:from-gray-900/80 dark:to-purple-950/20 backdrop-blur-lg border-0 overflow-hidden relative cursor-pointer"
+                  onClick={() => router.push(`/events/${event.id}`)}
+                >
                   {/* Featured badge */}
                   <div className="absolute top-4 right-4 z-10">
                     <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 text-xs font-semibold">
@@ -437,8 +443,9 @@ export default function EventsPage() {
             {regularEvents.map((event, index) => (
               <Card 
                 key={event.id} 
-                className="group hover:shadow-xl transition-all duration-500 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-0 overflow-hidden relative"
+                className="group hover:shadow-xl transition-all duration-500 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-0 overflow-hidden relative cursor-pointer"
                 style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => router.push(`/events/${event.id}`)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-start mb-2">

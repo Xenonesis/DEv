@@ -337,15 +337,27 @@ export const getEventById = async (id: string) => {
   const event = await db.event.findUnique({
     where: { id },
     include: {
+      host: {
+        select: {
+          id: true,
+          name: true,
+          image: true
+        }
+      },
       participants: {
         include: {
           user: {
             select: {
               id: true,
               name: true,
-              avatar: true
+              image: true
             }
           }
+        }
+      },
+      _count: {
+        select: {
+          participants: true
         }
       }
     }
