@@ -615,6 +615,29 @@ export default function HostPanel() {
                     </CardHeader>
                 </Card>
 
+                {/* Events Management Quick Access */}
+                <Card className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg">
+                                    <Calendar className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle>Events Management</CardTitle>
+                                    <CardDescription>Create and manage workshops, seminars, and networking events</CardDescription>
+                                </div>
+                            </div>
+                            <Button 
+                                onClick={() => router.push('/host/events')}
+                                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                            >
+                                Manage Events
+                            </Button>
+                        </div>
+                    </CardHeader>
+                </Card>
+
                 {/* Hackathons Table */}
                 <Card>
                     <CardHeader className="space-y-4">

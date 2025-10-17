@@ -446,6 +446,7 @@ export const createEvent = async (eventData: {
   maxAttendees?: number
   imageUrl?: string
   tags?: string[]
+  hostId?: string
 }) => {
   return await db.event.create({
     data: {
@@ -453,6 +454,66 @@ export const createEvent = async (eventData: {
       tags: eventData.tags ? stringifyJSON(eventData.tags) : null
     }
   })
+}
+
+export const updateEvent = async (id: string, eventData: Partial<{
+  title: string
+  description: string
+  type: EventType
+  date: Date
+  duration: number
+  location?: string
+  isOnline: boolean
+  maxAttendees?: number
+  imageUrl?: string
+  tags?: string[]
+}>) => {
+  return await db.event.update({
+    where: { id },
+    data: {
+      ...eventData,
+      tags: eventData.tags ? stringifyJSON(eventData.tags) : eventData.tags === undefined ? undefined : null
+    }
+  })
+}
+
+export const deleteEvent = async (id: string) => {
+  return await db.event.delete({
+    where: { id }
+  })
+}
+
+export const getEventsByHost = async (hostId: string) => {
+  const events = await db.event.findMany({
+    where: { hostId },
+    include: {
+      participants: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              avatar: true
+            }
+          }
+        },
+        orderBy: {
+          registeredAt: 'desc'
+        }
+      },
+      _count: {
+        select: { participants: true }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  })
+
+  return events.map(event => ({
+    ...event,
+    tags: parseJSON<string[]>(event.tags),
+    participantCount: event._count.participants
+  }))
 }
 
 export const getSessionById = async (id: string) => {

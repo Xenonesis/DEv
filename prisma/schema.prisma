@@ -38,6 +38,7 @@ model User {
   // App relations
   hostedHackathons Hackathon[]          @relation("HostedHackathons")
   hackathons       HackathonParticipant[]
+  hostedEvents     Event[]              @relation("HostedEvents")
   events           EventParticipant[]
   ideas            Idea[]
   comments         Comment[]            @relation("CommentAuthor")
@@ -202,10 +203,12 @@ model Event {
   maxAttendees Int?
   imageUrl    String?
   tags        String?  // JSON string of tags array
+  hostId      String?  // Host who created the event (optional for backward compatibility)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
+  host         User?    @relation("HostedEvents", fields: [hostId], references: [id], onDelete: Cascade)
   participants EventParticipant[]
 
   @@map("events")
