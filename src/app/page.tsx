@@ -1,6 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Canvas, ThreeEvent, useFrame, useThree } from '@react-three/fiber';
+import { shaderMaterial, useTrailTexture } from '@react-three/drei';
+import { useTheme } from 'next-themes';
+import * as THREE from 'three';
 import { ChevronRight, Mail, Phone, MapPin, Github, Linkedin, Twitter, ArrowRight, Trophy, Calendar, Users, BookOpen, Star, Zap, Target, Award, TrendingUp, MessageSquare, Sparkles, Code, Palette, Cpu, Database, Globe, Smartphone, Rocket, Heart, Brain, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +14,163 @@ import { Label } from '@/components/ui/label';
 import { ThemeToggle } from '@/components/theme-toggle';
 import Navbar from '@/components/Navbar';
 
+const DotMaterial = shaderMaterial(
+  {
+    time: 0,
+    resolution: new THREE.Vector2(),
+    dotColor: new THREE.Color('#FFFFFF'),
+    bgColor: new THREE.Color('#121212'),
+    mouseTrail: null,
+    render: 0,
+    rotation: 0,
+    gridSize: 100,
+    dotOpacity: 0.05
+  },
+  /* glsl */ `
+    void main() {
+      gl_Position = vec4(position.xy, 0.0, 1.0);
+    }
+  `,
+  /* glsl */ `
+    uniform float time;
+    uniform int render;
+    uniform vec2 resolution;
+    uniform vec3 dotColor;
+    uniform vec3 bgColor;
+    uniform sampler2D mouseTrail;
+    uniform float rotation;
+    uniform float gridSize;
+    uniform float dotOpacity;
+
+    vec2 rotate(vec2 uv, float angle) {
+        float s = sin(angle);
+        float c = cos(angle);
+        mat2 rotationMatrix = mat2(c, -s, s, c);
+        return rotationMatrix * (uv - 0.5) + 0.5;
+    }
+
+    vec2 coverUv(vec2 uv) {
+      vec2 s = resolution.xy / max(resolution.x, resolution.y);
+      vec2 newUv = (uv - 0.5) * s + 0.5;
+      return clamp(newUv, 0.0, 1.0);
+    }
+
+    float sdfCircle(vec2 p, float r) {
+        return length(p - 0.5) - r;
+    }
+
+    void main() {
+      vec2 screenUv = gl_FragCoord.xy / resolution;
+      vec2 uv = coverUv(screenUv);
+
+      vec2 rotatedUv = rotate(uv, rotation);
+
+      vec2 gridUv = fract(rotatedUv * gridSize);
+      vec2 gridUvCenterInScreenCoords = rotate((floor(rotatedUv * gridSize) + 0.5) / gridSize, -rotation);
+      float baseDot = sdfCircle(gridUv, 0.25);
+
+      float screenMask = smoothstep(0.0, 1.0, 1.0 - uv.y);
+      vec2 centerDisplace = vec2(0.7, 1.1);
+      float circleMaskCenter = length(uv - centerDisplace);
+      float circleMaskFromCenter = smoothstep(0.5, 1.0, circleMaskCenter);
+      float combinedMask = screenMask * circleMaskFromCenter;
+      float circleAnimatedMask = sin(time * 2.0 + circleMaskCenter * 10.0);
+
+      float mouseInfluence = texture2D(mouseTrail, gridUvCenterInScreenCoords).r;
+      float scaleInfluence = max(mouseInfluence * 0.5, circleAnimatedMask * 0.3);
+      float dotSize = min(pow(circleMaskCenter, 2.0) * 0.3, 0.3);
+      float sdfDot = sdfCircle(gridUv, dotSize * (1.0 + scaleInfluence * 0.5));
+      float smoothDot = smoothstep(0.05, 0.0, sdfDot);
+
+      float opacityInfluence = max(mouseInfluence * 50.0, circleAnimatedMask * 0.5);
+      vec3 composition = mix(bgColor, dotColor, smoothDot * combinedMask * dotOpacity * (1.0 + opacityInfluence));
+      gl_FragColor = vec4(composition, 1.0);
+
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }
+  `
+);
+
+function DotScreenShader() {
+  const { viewport } = useThree();
+  const { theme } = useTheme();
+
+  const [trail, onMove] = useTrailTexture({
+    size: 512,
+    radius: 0.1,
+    maxAge: 400,
+    interpolate: 1,
+    ease: (x: number) =>
+      x < 0.5
+        ? (1 - Math.sqrt(1 - Math.pow(2 * x, 2))) / 2
+        : (Math.sqrt(1 - Math.pow(-2 * x + 2, 2)) + 1) / 2
+  });
+
+  const dotMaterial = useMemo(() => {
+    const material = new DotMaterial();
+    material.uniforms.gridSize.value = 100;
+    material.uniforms.rotation.value = 0;
+    material.uniforms.render.value = 0;
+    return material;
+  }, []);
+
+  useEffect(() => {
+    dotMaterial.uniforms.mouseTrail.value = trail;
+  }, [dotMaterial, trail]);
+
+  useEffect(() => {
+    const themeColors = theme === 'light'
+      ? { dotColor: '#e1e1e1', bgColor: '#F4F5F5', dotOpacity: 0.15 }
+      : { dotColor: '#FFFFFF', bgColor: '#121212', dotOpacity: 0.05 };
+
+    dotMaterial.uniforms.dotColor.value.set(themeColors.dotColor);
+    dotMaterial.uniforms.bgColor.value.set(themeColors.bgColor);
+    dotMaterial.uniforms.dotOpacity.value = themeColors.dotOpacity;
+  }, [theme, dotMaterial]);
+
+  useFrame(({ clock, size: frameSize, gl: frameGl }) => {
+    dotMaterial.uniforms.time.value = clock.elapsedTime;
+    const dpr = frameGl.getPixelRatio();
+    dotMaterial.uniforms.resolution.value.set(frameSize.width * dpr, frameSize.height * dpr);
+  });
+
+  useEffect(() => {
+    return () => {
+      dotMaterial.dispose();
+    };
+  }, [dotMaterial]);
+
+  const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
+    onMove(e);
+  };
+
+  const scale = Math.max(viewport.width, viewport.height) / 2;
+
+  return (
+    <mesh scale={[scale, scale, 1]} onPointerMove={handlePointerMove}>
+      <planeGeometry args={[2, 2]} />
+      <primitive object={dotMaterial} />
+    </mesh>
+  );
+}
+
+function DotShaderBackground() {
+  return (
+    <Canvas
+      gl={{
+        antialias: true,
+        powerPreference: 'high-performance',
+        outputColorSpace: THREE.SRGBColorSpace,
+        toneMapping: THREE.NoToneMapping
+      }}
+      className="absolute inset-0"
+    >
+      <DotScreenShader />
+    </Canvas>
+  );
+}
+
 export default function Home() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
   const [counters, setCounters] = useState({
@@ -18,30 +179,10 @@ export default function Home() {
     prizes: 0,
     success: 0
   });
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [scrollY, setScrollY] = useState(0);
-  const [isVisible, setIsVisible] = useState({});
+  const [isVisible, setIsVisible] = useState<Record<string, boolean>>({});
   const heroRef = useRef(null);
   const statsRef = useRef(null);
   const featuresRef = useRef(null);
-
-  // Mouse tracking for parallax effects
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
-  // Scroll tracking for animations
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrollY(window.scrollY);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // Intersection Observer for scroll animations
   useEffect(() => {
@@ -237,62 +378,19 @@ export default function Home() {
       <Navbar />
 
       {/* Enhanced Hero Section with Advanced Animations */}
-      <section 
+      <section
         ref={heroRef}
-        id="hero" 
-        className="pt-20 min-h-screen flex items-center relative overflow-hidden"
+        id="hero"
+        className="relative flex min-h-screen items-center overflow-hidden pt-20"
       >
-        {/* Multi-layered animated background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:via-background dark:to-blue-950/20"></div>
-        
-        {/* Floating particles background */}
-        <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute animate-float rounded-full bg-gradient-to-r from-purple-400/20 to-blue-400/20 blur-sm"
-              style={{
-                width: Math.random() * 100 + 50 + 'px',
-                height: Math.random() * 100 + 50 + 'px',
-                left: Math.random() * 100 + '%',
-                top: Math.random() * 100 + '%',
-                animationDelay: Math.random() * 5 + 's',
-                animationDuration: Math.random() * 10 + 10 + 's'
-              }}
-            />
-          ))}
+        <div className="absolute inset-0">
+          <DotShaderBackground />
         </div>
 
-        {/* Interactive blob animations following mouse */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div 
-            className="absolute w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 transition-all duration-1000 ease-out"
-            style={{
-              left: mousePosition.x * 0.02 + 'px',
-              top: mousePosition.y * 0.02 + 'px',
-              transform: 'translate(-50%, -50%)'
-            }}
-          />
-          <div 
-            className="absolute w-96 h-96 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 transition-all duration-1000 ease-out"
-            style={{
-              right: mousePosition.x * -0.02 + 'px',
-              top: mousePosition.y * 0.02 + 'px',
-              transform: 'translate(50%, -50%)'
-            }}
-          />
-          <div 
-            className="absolute w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 transition-all duration-1000 ease-out"
-            style={{
-              left: mousePosition.x * 0.02 + 'px',
-              bottom: mousePosition.y * -0.02 + 'px',
-              transform: 'translate(-50%, 50%)'
-            }}
-          />
-        </div>
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-950/30 via-transparent to-blue-950/30 mix-blend-screen" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className={`text-center transition-all duration-1000 ${isVisible.hero ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <div className="max-w-7xl relative z-10 mx-auto px-4 sm:px-6 lg:px-8">
+          <div className={`text-center transition-all duration-1000 ${isVisible['hero'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {/* Animated announcement badge */}
             <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/20 dark:to-blue-950/20 text-purple-600 px-6 py-3 rounded-full text-sm font-medium mb-8 backdrop-blur-sm border border-purple-200/50 hover:scale-105 transition-transform duration-300">
               <Sparkles className="animate-pulse" size={18} />
@@ -303,14 +401,14 @@ export default function Home() {
             </div>
             
             {/* Enhanced main heading with gradient and animation */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-foreground mb-6 leading-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold text-foreground mb-6 leading-tight mix-blend-exclusion text-white">
               <span className="block mb-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                 Compete,
               </span>
               <span className="block mb-2 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
                 Learn,
               </span>
-              <span className={`block bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent bg-size-200 animate-gradient-shift`}>
+              <span className="block bg-gradient-to-r from-purple-500 via-blue-500 to-purple-500 bg-clip-text text-transparent bg-size-200 animate-gradient-shift">
                 Innovate
               </span>
             </h1>
@@ -362,9 +460,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <ChevronRight className="rotate-90 text-muted-foreground" size={24} />
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <ChevronRight className="rotate-90 text-white/70" size={24} />
         </div>
       </section>
 
@@ -378,7 +475,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-r from-purple-100/50 via-transparent to-blue-100/50 dark:from-purple-950/10 dark:to-blue-950/10"></div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className={`grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 transition-all duration-1000 ${isVisible.stats ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 transition-all duration-1000 ${isVisible['stats'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {[
               { value: counters.competitions, suffix: "+", label: "Competitions", icon: Trophy, color: "purple" },
               { value: counters.participants, suffix: "+", label: "Participants", icon: Users, color: "blue" },
@@ -417,7 +514,7 @@ export default function Home() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className={`text-center mb-16 transition-all duration-1000 ${isVisible.features ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className={`text-center mb-16 transition-all duration-1000 ${isVisible['features'] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-950/20 dark:to-blue-950/20 text-purple-600 px-6 py-3 rounded-full text-sm font-medium mb-8 backdrop-blur-sm border border-purple-200/50">
               <Target size={18} />
               <span className="font-semibold">Why Choose NeoFest</span>
