@@ -450,11 +450,51 @@ export default function HackathonDetailPage() {
                   <CardTitle>Share</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={async () => {
+                      const shareData = {
+                        title: hackathon.title,
+                        text: `Check out this hackathon: ${hackathon.title}`,
+                        url: window.location.href
+                      };
+
+                      if (navigator.share && navigator.canShare(shareData)) {
+                        try {
+                          await navigator.share(shareData);
+                          toast.success('Hackathon shared successfully!');
+                        } catch (error) {
+                          if ((error as Error).name !== 'AbortError') {
+                            console.error('Error sharing:', error);
+                            // Fallback to clipboard
+                            await navigator.clipboard.writeText(window.location.href);
+                            toast.success('Link copied to clipboard!');
+                          }
+                        }
+                      } else {
+                        // Fallback to clipboard
+                        try {
+                          await navigator.clipboard.writeText(window.location.href);
+                          toast.success('Link copied to clipboard!');
+                        } catch (error) {
+                          console.error('Error copying to clipboard:', error);
+                          toast.error('Failed to copy link');
+                        }
+                      }
+                    }}
+                  >
                     <Share2 className="w-4 h-4 mr-2" />
                     Share Hackathon
                   </Button>
-                  <Button variant="outline" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => {
+                      // For now, just show a toast. You can implement actual save functionality later
+                      toast.success('Hackathon saved for later!');
+                    }}
+                  >
                     <Heart className="w-4 h-4 mr-2" />
                     Save for Later
                   </Button>

@@ -86,13 +86,13 @@ export default function ProfilePage() {
     try {
       setIsLoading(true)
       const response = await fetch('/api/user/profile')
-      
+
       if (response.status === 401) {
         // User is not authenticated, redirect to signin
         router.push('/auth/signin')
         return
       }
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch profile')
       }
@@ -163,7 +163,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="pt-16 px-4 py-8">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -190,17 +190,17 @@ export default function ProfilePage() {
                     {user.name?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
-                
+
                 <div className="flex-1 space-y-3">
                   <div>
                     <h3 className="text-xl font-semibold">{user.name}</h3>
                     <p className="text-muted-foreground">{user.email}</p>
                   </div>
-                  
+
                   {user.bio && (
                     <p className="text-sm">{user.bio}</p>
                   )}
-                  
+
                   <div className="flex items-center flex-wrap gap-2">
                     <Badge variant="secondary">Level {user.level}</Badge>
                     <Badge variant="outline">{user.points} Points</Badge>
@@ -218,7 +218,7 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
-                
+
                 <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
                   <Edit className="w-4 h-4 mr-2" />
                   Edit Profile
@@ -244,14 +244,13 @@ export default function ProfilePage() {
                   <p className="text-sm text-muted-foreground">
                     Choose your current role to access different features:
                   </p>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Participant Mode */}
-                    <div className={`p-4 border-2 rounded-lg transition-all ${
-                      user.role === 'USER' 
-                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20' 
+                    <div className={`p-4 border-2 rounded-lg transition-all ${user.role === 'USER'
+                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20'
                         : 'border-border hover:border-purple-300'
-                    }`}>
+                      }`}>
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h4 className="font-semibold text-lg">Participant Mode</h4>
@@ -270,7 +269,7 @@ export default function ProfilePage() {
                         <li>• Join teams</li>
                       </ul>
                       {user.role !== 'USER' && (
-                        <Button 
+                        <Button
                           onClick={() => handleRoleSwitch('USER')}
                           disabled={isSwitchingRole}
                           variant="outline"
@@ -282,11 +281,10 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Host Mode */}
-                    <div className={`p-4 border-2 rounded-lg transition-all ${
-                      user.role === 'HOST' 
-                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20' 
+                    <div className={`p-4 border-2 rounded-lg transition-all ${user.role === 'HOST'
+                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20'
                         : 'border-border hover:border-purple-300'
-                    }`}>
+                      }`}>
                       <div className="flex items-start justify-between mb-3">
                         <div>
                           <h4 className="font-semibold text-lg">Host Mode</h4>
@@ -305,7 +303,7 @@ export default function ProfilePage() {
                         <li>• View analytics</li>
                       </ul>
                       {user.role !== 'HOST' && (
-                        <Button 
+                        <Button
                           onClick={() => handleRoleSwitch('HOST')}
                           disabled={isSwitchingRole}
                           className="w-full bg-purple-600 hover:bg-purple-700"
@@ -343,7 +341,7 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
@@ -353,7 +351,7 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
@@ -376,7 +374,7 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
@@ -386,7 +384,7 @@ export default function ProfilePage() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center">
@@ -507,13 +505,13 @@ export default function ProfilePage() {
                 </>
               )}
 
-              {recentActivity.hackathons.length === 0 && 
-               recentActivity.events.length === 0 && 
-               recentActivity.sessions.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>No recent activity. Start exploring and participating!</p>
-                </div>
-              )}
+              {recentActivity.hackathons.length === 0 &&
+                recentActivity.events.length === 0 &&
+                recentActivity.sessions.length === 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No recent activity. Start exploring and participating!</p>
+                  </div>
+                )}
             </CardContent>
           </Card>
         </div>
