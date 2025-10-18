@@ -57,6 +57,8 @@ model User {
   hostedMobileInnovations MobileInnovation[]            @relation("HostedMobileInnovations")
   mobileInnovations       MobileInnovationParticipant[]
   mobileSubmissions       MobileInnovationSubmission[]
+  hostedConferences       Conference[]                  @relation("HostedConferences")
+  conferences             ConferenceParticipant[]
 
   @@map("users")
 }
@@ -226,6 +228,43 @@ model EventParticipant {
 
   @@unique([eventId, userId])
   @@map("event_participants")
+}
+
+model Conference {
+  id           String         @id @default(cuid())
+  title        String
+  description  String
+  type         ConferenceType
+  date         DateTime
+  duration     Int // Duration in minutes
+  location     String?
+  isOnline     Boolean        @default(false)
+  maxAttendees Int?
+  imageUrl     String?
+  tags         String? // JSON string of tags array
+  hostId       String? // Host who created the conference (optional for backward compatibility)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  // Relations
+  host         User?                   @relation("HostedConferences", fields: [hostId], references: [id], onDelete: Cascade)
+  participants ConferenceParticipant[]
+
+  @@map("conferences")
+}
+
+model ConferenceParticipant {
+  id             String     @id @default(cuid())
+  conferenceId   String
+  userId         String
+  registeredAt   DateTime   @default(now())
+
+  // Relations
+  conference   Conference @relation(fields: [conferenceId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conferenceId, userId])
+  @@map("conference_participants")
 }
 
 model LearningSession {
@@ -603,6 +642,12 @@ enum EventType {
   NETWORKING
   COMPETITION
   SOCIAL
+}
+
+enum ConferenceType {
+  CONFERENCE
+  SUMMIT
+  WEBINAR
 }
 
 enum SessionType {

@@ -65,6 +65,9 @@ interface HostStats {
     activeHackathons: number;
     totalParticipants: number;
     completedHackathons: number;
+    totalConferences: number;
+    upcomingConferences: number;
+    pastConferences: number;
 }
 
 const statusOptions = ['ALL', 'UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED'] as const;
@@ -81,7 +84,10 @@ export default function HostPanel() {
         totalHackathons: 0,
         activeHackathons: 0,
         totalParticipants: 0,
-        completedHackathons: 0
+        completedHackathons: 0,
+        totalConferences: 0,
+        upcomingConferences: 0,
+        pastConferences: 0,
     });
     const [loading, setLoading] = useState(true);
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -92,7 +98,17 @@ export default function HostPanel() {
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
     const [difficultyFilter, setDifficultyFilter] = useState<DifficultyFilter>('ALL');
 
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        title: string;
+        description: string;
+        theme: string;
+        prize: string;
+        maxParticipants: string;
+        startDate: string;
+        endDate: string;
+        difficulty: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
+        tags: string;
+    }>({
         title: '',
         description: '',
         theme: '',
@@ -100,7 +116,7 @@ export default function HostPanel() {
         maxParticipants: '',
         startDate: '',
         endDate: '',
-        difficulty: 'BEGINNER' as const,
+        difficulty: 'BEGINNER',
         tags: ''
     });
 
@@ -633,6 +649,29 @@ export default function HostPanel() {
                                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                             >
                                 Manage Events
+                            </Button>
+                        </div>
+                    </CardHeader>
+                </Card>
+
+                {/* Conferences Management Quick Access */}
+                <Card className="mb-8 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border-red-200 dark:border-red-800">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-r from-red-600 to-orange-600 rounded-lg">
+                                    <Users className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle>Conferences Management</CardTitle>
+                                    <CardDescription>Create and manage your conferences</CardDescription>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={() => router.push('/host/conferences')}
+                                className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
+                            >
+                                Manage Conferences
                             </Button>
                         </div>
                     </CardHeader>

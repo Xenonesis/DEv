@@ -49,9 +49,7 @@ const Navbar = () => {
       icon: Calendar,
       dropdown: [
         { label: 'Upcoming Events', href: '/events', icon: Calendar },
-        { label: 'Tech Conferences', href: '/conferences', icon: Users },
-        { label: 'Workshops', href: '/workshops', icon: BookOpen },
-        { label: 'Meetups', href: '/meetups', icon: Users },
+        { label: 'Conferences', href: '/conferences', icon: Users },
       ]
     },
     {
@@ -166,9 +164,7 @@ const Navbar = () => {
                                 {dropdownItem.label === 'Web Dev Contests' && 'Showcase your expertise'}
                                 {dropdownItem.label === 'Mobile Innovation' && 'Build amazing apps'}
                                 {dropdownItem.label === 'Upcoming Events' && 'Join live events'}
-                                {dropdownItem.label === 'Tech Conferences' && 'Learn from experts'}
-                                {dropdownItem.label === 'Workshops' && 'Hands-on learning'}
-                                {dropdownItem.label === 'Meetups' && 'Network with peers'}
+                                {dropdownItem.label === 'Conferences' && 'Learn from experts'}
                                 {dropdownItem.label === 'Courses' && 'Structured learning paths'}
                                 {dropdownItem.label === 'Tutorials' && 'Step-by-step guides'}
                                 {dropdownItem.label === 'Resources' && 'Helpful materials'}

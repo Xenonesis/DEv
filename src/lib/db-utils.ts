@@ -8,6 +8,7 @@ import type {
   Achievement,
   HackathonStatus,
   EventType,
+  ConferenceType,
   SessionType,
   Difficulty,
   IdeaStatus
@@ -379,6 +380,117 @@ export const registerForEvent = async (eventId: string, userId: string) => {
       userId
     }
   })
+}
+
+export const registerForConference = async (conferenceId: string, userId: string) => {
+  return await db.conferenceParticipant.create({
+    data: {
+      conferenceId,
+      userId
+    }
+  })
+}
+
+export const getAllConferences = async (filters?: {
+  type?: ConferenceType
+  isOnline?: boolean
+  search?: string
+}) => {
+  const where: any = {}
+  
+  if (filters?.type) {
+    where.type = filters.type
+  }
+  
+  if (filters?.isOnline !== undefined) {
+    where.isOnline = filters.isOnline
+  }
+  
+  if (filters?.search) {
+    where.OR = [
+      { title: { contains: filters.search, mode: 'insensitive' } },
+      { description: { contains: filters.search, mode: 'insensitive' } }
+    ]
+  }
+
+  const conferences = await db.conference.findMany({
+    where,
+    include: {
+      _count: {
+        select: {
+          participants: true
+        }
+      }
+    },
+    orderBy: {
+      date: 'asc'
+    }
+  })
+
+  return conferences.map(conference => ({
+    ...conference,
+    tags: parseJSON<string[]>(conference.tags)
+  }))
+}
+
+export const createConference = async (conferenceData: {
+  title: string
+  description: string
+  type: ConferenceType
+  date: Date
+  duration: number
+  location?: string
+  isOnline: boolean
+  maxAttendees?: number
+  imageUrl?: string
+  tags?: string[]
+  hostId?: string
+}) => {
+  return await db.conference.create({
+    data: {
+      ...conferenceData,
+      tags: conferenceData.tags ? stringifyJSON(conferenceData.tags) : null
+    }
+  })
+}
+
+export const getConferenceById = async (id: string) => {
+  const conference = await db.conference.findUnique({
+    where: { id },
+    include: {
+      host: {
+        select: {
+          id: true,
+          name: true,
+          image: true
+        }
+      },
+      participants: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true
+            }
+          }
+        }
+      },
+      _count: {
+        select: {
+          participants: true
+        }
+      }
+    }
+  })
+
+  if (conference) {
+    return {
+      ...conference,
+      tags: parseJSON<string[]>(conference.tags)
+    }
+  }
+  return null
 }
 
 // Session related functions
