@@ -4,15 +4,24 @@
   "private": true,
   "scripts": {
     "dev": "nodemon --exec \"npx tsx server.ts\" --watch server.ts --watch src --ext ts,tsx,js,jsx",
-    "build": "prisma generate --no-engine && next build",
+    "build": "prisma generate && prisma migrate deploy && next build",
     "start": "set NODE_ENV=production && tsx server.ts",
+    "start:unix": "NODE_ENV=production tsx server.ts",
+    "postinstall": "prisma generate",
     "lint": "next lint",
     "db:push": "prisma db push",
-    "db:generate": "prisma generate --accelerate",
-    "db:generate:prod": "prisma generate --no-engine",
+    "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:reset": "prisma migrate reset",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "db:validate": "prisma validate && prisma format",
+    "db:test": "tsx scripts/test-db-connection.ts",
+    "db:init": "tsx scripts/init-production-db.ts",
+    "vercel:deploy": "vercel --prod",
+    "vercel:preview": "vercel",
+    "vercel:env": "vercel env pull .env.local"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

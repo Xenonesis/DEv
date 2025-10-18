@@ -479,6 +479,85 @@ xl: '1280px'  /* Extra large devices */
 
 ---
 
+## 🚀 Production Database Setup
+
+### 🗄️ **Database Configuration for Production**
+
+NeoFest is **production-ready** with optimized database configuration. Follow these guides for deployment:
+
+📖 **Complete Documentation:**
+- **[Production Deployment Guide](./PRODUCTION_DEPLOYMENT.md)** - Comprehensive deployment instructions
+- **[Production Checklist](./PRODUCTION_CHECKLIST.md)** - Pre-deployment verification checklist
+- **[Quick Reference](./QUICK_REFERENCE.md)** - Essential commands and configuration
+- **[Deployment Verification](./DEPLOYMENT_VERIFICATION.md)** - Post-deployment testing guide
+
+### ⚡ **Quick Start for Production**
+
+```bash
+# 1. Set environment variables
+DATABASE_URL="prisma://accelerate.prisma-data.net/?api_key=YOUR_API_KEY"
+DIRECT_URL="postgresql://user:pass@host:port/db?sslmode=require"
+NEXTAUTH_SECRET="$(openssl rand -base64 32)"
+NEXTAUTH_URL="https://your-domain.com"
+NODE_ENV="production"
+
+# 2. Test database connection
+npm run db:test
+
+# 3. Initialize production database
+npm run db:init
+
+# 4. Build application
+npm run build
+
+# 5. Start production server
+npm run start:unix  # Linux/Mac
+npm run start       # Windows
+
+# 6. Verify deployment
+curl https://your-domain.com/api/health
+```
+
+### ✅ **Production Features**
+
+- ✅ **Optimized Connection Pooling** - Efficient database connections
+- ✅ **Graceful Shutdown Handlers** - Clean connection cleanup
+- ✅ **Health Check Endpoint** - `/api/health` with database status
+- ✅ **Production-Ready Logging** - Error/warning only in production
+- ✅ **Prisma Accelerate Support** - Edge database acceleration
+- ✅ **Migration Management** - Safe schema updates
+- ✅ **Database Testing Scripts** - Connection verification tools
+
+### 🔧 **Database Commands**
+
+```bash
+npm run db:test           # Test database connection
+npm run db:init           # Initialize production database
+npm run db:migrate:deploy # Deploy migrations
+npm run db:generate       # Generate Prisma Client
+npm run db:validate       # Validate schema
+```
+
+### 🏥 **Health Monitoring**
+
+Check your production database health:
+
+```bash
+curl https://your-domain.com/api/health
+```
+
+**Healthy Response:**
+```json
+{
+  "status": "healthy",
+  "message": "Good!",
+  "database": "connected",
+  "timestamp": "2024-01-01T00:00:00.000Z"
+}
+```
+
+---
+
 ## 🚀 Deployment & Production
 
 ### 🌐 **Deployment Options**

@@ -87,6 +87,12 @@ export default function ProfilePage() {
       setIsLoading(true)
       const response = await fetch('/api/user/profile')
       
+      if (response.status === 401) {
+        // User is not authenticated, redirect to signin
+        router.push('/auth/signin')
+        return
+      }
+      
       if (!response.ok) {
         throw new Error('Failed to fetch profile')
       }
