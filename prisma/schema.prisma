@@ -59,6 +59,14 @@ model User {
   mobileSubmissions       MobileInnovationSubmission[]
   hostedConferences       Conference[]                  @relation("HostedConferences")
   conferences             ConferenceParticipant[]
+  hostedCourses           Course[]                      @relation("HostedCourses")
+  courses                 CourseParticipant[]
+  hostedTutorials         Tutorial[]                    @relation("HostedTutorials")
+  tutorials               TutorialParticipant[]
+  hostedResources         Resource[]                    @relation("HostedResources")
+  mentorshipsAsMentor     Mentorship[]                  @relation("MentorMentorships")
+  mentorshipsAsMentee     Mentorship[]                  @relation("MenteeMentorships")
+  mentorshipSessions      MentorshipSession[]
 
   @@map("users")
 }
@@ -265,6 +273,130 @@ model ConferenceParticipant {
 
   @@unique([conferenceId, userId])
   @@map("conference_participants")
+}
+
+model Course {
+  id              String          @id @default(cuid())
+  title           String
+  description     String
+  imageUrl        String?
+  tags            String? // JSON string of tags array
+  difficulty      Difficulty      @default(BEGINNER)
+  hostId          String // Host who created the course
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  host         User                @relation("HostedCourses", fields: [hostId], references: [id], onDelete: Cascade)
+  participants CourseParticipant[]
+
+  @@map("courses")
+}
+
+model CourseParticipant {
+  id           String   @id @default(cuid())
+  courseId     String
+  userId       String
+  registeredAt DateTime @default(now())
+  progress     Float    @default(0) // Progress 0-100
+  completed    Boolean  @default(false)
+  completedAt  DateTime?
+
+  // Relations
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, userId])
+  @@map("course_participants")
+}
+
+model Tutorial {
+  id           String                @id @default(cuid())
+  title        String
+  description  String
+  imageUrl     String?
+  videoUrl     String?
+  tags         String? // JSON string of tags array
+  difficulty   Difficulty            @default(BEGINNER)
+  hostId       String // Host who created the tutorial
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+
+  // Relations
+  host         User                  @relation("HostedTutorials", fields: [hostId], references: [id], onDelete: Cascade)
+  participants TutorialParticipant[]
+
+  @@map("tutorials")
+}
+
+model TutorialParticipant {
+  id           String   @id @default(cuid())
+  tutorialId   String
+  userId       String
+  registeredAt DateTime @default(now())
+  progress     Float    @default(0) // Progress 0-100
+  completed    Boolean  @default(false)
+  completedAt  DateTime?
+
+  // Relations
+  tutorial Tutorial @relation(fields: [tutorialId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tutorialId, userId])
+  @@map("tutorial_participants")
+}
+
+model Resource {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  url         String
+  imageUrl    String?
+  tags        String? // JSON string of tags array
+  type        ResourceType
+  hostId      String // Host who created the resource
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relations
+  host      User @relation("HostedResources", fields: [hostId], references: [id], onDelete: Cascade)
+
+  @@map("resources")
+}
+
+model Mentorship {
+  id          String              @id @default(cuid())
+  mentorId    String
+  menteeId    String
+  status      MentorshipStatus    @default(PENDING)
+  goals       String // JSON string of goals array
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // Relations
+  mentor   User                @relation("MentorMentorships", fields: [mentorId], references: [id], onDelete: Cascade)
+  mentee   User                @relation("MenteeMentorships", fields: [menteeId], references: [id], onDelete: Cascade)
+  sessions MentorshipSession[]
+
+  @@unique([mentorId, menteeId])
+  @@map("mentorships")
+}
+
+model MentorshipSession {
+  id           String    @id @default(cuid())
+  mentorshipId String
+  date         DateTime
+  duration     Int // Duration in minutes
+  notes        String?
+  feedback     String?
+  status       SessionStatus @default(SCHEDULED)
+  userId       String
+
+  // Relations
+  mentorship Mentorship @relation(fields: [mentorshipId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("mentorship_sessions")
 }
 
 model LearningSession {
@@ -692,6 +824,27 @@ enum ForumCategory {
   FEEDBACK
   TECHNICAL
   CAREER
+}
+
+enum ResourceType {
+  ARTICLE
+  VIDEO
+  TOOL
+  BOOK
+  PAPER
+}
+
+enum MentorshipStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum SessionStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
 }
 
 enum ChallengeStatus {

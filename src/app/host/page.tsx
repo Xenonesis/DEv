@@ -19,7 +19,11 @@ import {
     Brain,
     Code,
     Smartphone,
-    Search
+    Search,
+    BookOpen,
+    Film,
+    Link,
+    UserCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -672,6 +676,98 @@ export default function HostPanel() {
                                 className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
                             >
                                 Manage Conferences
+                            </Button>
+                        </div>
+                    </CardHeader>
+                </Card>
+
+                {/* Courses Management Quick Access */}
+                <Card className="mb-8 bg-gradient-to-r from-green-50 to-cyan-50 dark:from-green-950/20 dark:to-cyan-950/20 border-green-200 dark:border-green-800">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-r from-green-600 to-cyan-600 rounded-lg">
+                                    <BookOpen className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle>Courses Management</CardTitle>
+                                    <CardDescription>Create and manage your courses</CardDescription>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={() => router.push('/host/courses')}
+                                className="bg-gradient-to-r from-green-600 to-cyan-600 hover:from-green-700 hover:to-cyan-700"
+                            >
+                                Manage Courses
+                            </Button>
+                        </div>
+                    </CardHeader>
+                </Card>
+
+                {/* Tutorials Management Quick Access */}
+                <Card className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg">
+                                    <Film className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle>Tutorials Management</CardTitle>
+                                    <CardDescription>Create and manage your tutorials</CardDescription>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={() => router.push('/host/tutorials')}
+                                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                            >
+                                Manage Tutorials
+                            </Button>
+                        </div>
+                    </CardHeader>
+                </Card>
+
+                {/* Resources Management Quick Access */}
+                <Card className="mb-8 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-200 dark:border-yellow-800">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-lg">
+                                    <Link className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle>Resources Management</CardTitle>
+                                    <CardDescription>Create and manage your resources</CardDescription>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={() => router.push('/host/resources')}
+                                className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+                            >
+                                Manage Resources
+                            </Button>
+                        </div>
+                    </CardHeader>
+                </Card>
+
+                {/* Mentorships Management Quick Access */}
+                <Card className="mb-8 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20 border-pink-200 dark:border-pink-800">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-r from-pink-600 to-rose-600 rounded-lg">
+                                    <UserCheck className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <CardTitle>Mentorships Management</CardTitle>
+                                    <CardDescription>Manage your mentorships</CardDescription>
+                                </div>
+                            </div>
+                            <Button
+                                onClick={() => router.push('/host/mentorship')}
+                                className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
+                            >
+                                Manage Mentorships
                             </Button>
                         </div>
                     </CardHeader>
