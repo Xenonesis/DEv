@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
+import Navbar from '@/components/Navbar';
 import { toast } from 'sonner';
 
 interface Course {
@@ -131,26 +132,7 @@ const CourseDetailsPage = ({ params }: { params: { id: string } }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Navigation */}
-        <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-sm z-50 border-b border-border">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  NeoFest
-                </Link>
-              </div>
-              <div className="hidden md:flex items-center space-x-8">
-                <Link href="/" className="text-foreground hover:text-purple-600 transition-colors">Home</Link>
-                <Link href="/courses" className="text-purple-600 font-medium">Courses</Link>
-                <ThemeToggle />
-              </div>
-              <div className="md:hidden">
-                <ThemeToggle />
-              </div>
-            </div>
-          </div>
-        </nav>
+        <Navbar />
 
         <div className="pt-24 pb-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -177,26 +159,7 @@ const CourseDetailsPage = ({ params }: { params: { id: string } }) => {
   if (!course) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Navigation */}
-        <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-sm z-50 border-b border-border">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center">
-                <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  NeoFest
-                </Link>
-              </div>
-              <div className="hidden md:flex items-center space-x-8">
-                <Link href="/" className="text-foreground hover:text-purple-600 transition-colors">Home</Link>
-                <Link href="/courses" className="text-purple-600 font-medium">Courses</Link>
-                <ThemeToggle />
-              </div>
-              <div className="md:hidden">
-                <ThemeToggle />
-              </div>
-            </div>
-          </div>
-        </nav>
+        <Navbar />
 
         <div className="pt-24 pb-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -221,33 +184,7 @@ const CourseDetailsPage = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-sm z-50 border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                NeoFest
-              </Link>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-foreground hover:text-purple-600 transition-colors">Home</Link>
-              <Link href="/functionalities" className="text-foreground hover:text-purple-600 transition-colors">Functionalities</Link>
-              <Link href="/ideas" className="text-foreground hover:text-purple-600 transition-colors">Ideas</Link>
-              <Link href="/courses" className="text-purple-600 font-medium">Courses</Link>
-              <Link href="/#about" className="text-foreground hover:text-purple-600 transition-colors">About</Link>
-              <Link href="/#contact" className="text-foreground hover:text-purple-600 transition-colors">Contact</Link>
-              <ThemeToggle />
-              <Button>Get Started</Button>
-            </div>
-
-            <div className="md:hidden">
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="pt-24 pb-8 bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:via-background dark:to-blue-950/20">

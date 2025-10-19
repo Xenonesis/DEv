@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ThemeToggle } from '@/components/theme-toggle';
+import Navbar from '@/components/Navbar';
 import Link from 'next/link';
 
 interface Course {
@@ -255,33 +256,7 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-sm z-50 border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <a href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                NeoFest
-              </a>
-            </div>
-
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="/" className="text-foreground hover:text-purple-600 transition-colors">Home</a>
-              <a href="/functionalities" className="text-foreground hover:text-purple-600 transition-colors">Functionalities</a>
-              <a href="/ideas" className="text-foreground hover:text-purple-600 transition-colors">Ideas</a>
-              <a href="/courses" className="text-purple-600 font-medium">Courses</a>
-              <a href="/#about" className="text-foreground hover:text-purple-600 transition-colors">About</a>
-              <a href="/#contact" className="text-foreground hover:text-purple-600 transition-colors">Contact</a>
-              <ThemeToggle />
-              <Button>Get Started</Button>
-            </div>
-
-            <div className="md:hidden">
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="pt-24 pb-16 bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:via-background dark:to-blue-950/20">

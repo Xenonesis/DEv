@@ -37,6 +37,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import Navbar from '@/components/Navbar';
 
 interface Hackathon {
     id: string;
@@ -375,8 +376,10 @@ export default function HostPanel() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
-            <div className="border-b border-border bg-background/95 backdrop-blur-sm">
+            <Navbar />
+            
+            {/* Host Panel Header */}
+            <div className="pt-20 border-b border-border bg-background/95 backdrop-blur-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
                         <div className="flex items-center">

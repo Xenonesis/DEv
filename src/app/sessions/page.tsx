@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { ThemeToggle } from '@/components/theme-toggle';
+import Navbar from '@/components/Navbar';
 
 interface Session {
   id: string;
@@ -404,27 +405,7 @@ export default function SessionsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-sm z-50 border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <a href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                NeoFest
-              </a>
-            </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="/" className="text-foreground hover:text-purple-600 transition-colors">Home</a>
-              <a href="/hackathons" className="text-foreground hover:text-purple-600 transition-colors">Hackathons</a>
-              <a href="/events" className="text-foreground hover:text-purple-600 transition-colors">Events</a>
-              <a href="/sessions" className="text-foreground hover:text-purple-600 transition-colors font-semibold">Sessions</a>
-              <a href="/functionalities" className="text-foreground hover:text-purple-600 transition-colors">Functionalities</a>
-              <a href="/ideas" className="text-foreground hover:text-purple-600 transition-colors">Ideas</a>
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="pt-24 pb-12 bg-gradient-to-br from-purple-50 via-background to-blue-50 dark:from-purple-950/20 dark:via-background dark:to-blue-950/20">
