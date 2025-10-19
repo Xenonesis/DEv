@@ -8,19 +8,28 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || session.user.role !== 'HOST') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !session.user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
+    // Check if user is a host
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    if (!user || user.role !== 'HOST') {
+      return NextResponse.json({ success: false, error: 'Host privileges required' }, { status: 403 });
+    }
+
     const { status } = await req.json();
     const mentorship = await db.mentorship.findUnique({
       where: { id: params.id },
     });
-    });
 
     if (!mentorship || mentorship.mentorId !== session.user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     }
 
     const updatedMentorship = await db.mentorship.update({
@@ -28,9 +37,9 @@ export async function PUT(
       data: { status },
     });
 
-    return NextResponse.json(updatedMentorship);
+    return NextResponse.json({ success: true, data: updatedMentorship });
   } catch (error) {
     console.error('Error updating mentorship:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
   }
 }

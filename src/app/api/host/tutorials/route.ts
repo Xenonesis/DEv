@@ -5,20 +5,41 @@ import { authOptions } from '@/lib/auth';
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || session.user.role !== 'HOST') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !session.user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
+    // Check if user is a host
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    if (!user || user.role !== 'HOST') {
+      return NextResponse.json({ success: false, error: 'Host privileges required' }, { status: 403 });
+    }
+
     const tutorials = await db.tutorial.findMany({
       where: {
         hostId: session.user.id,
       },
-      select: {
-        id: true,
-        title: true,
-        difficulty: true,
-        createdAt: true,
+      include: {
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: true
+              }
+            }
+          },
+          orderBy: {
+            startedAt: 'desc'
+          }
+        },
         _count: {
           select: {
             participants: true,
@@ -29,20 +50,30 @@ export async function GET() {
         createdAt: 'desc',
       },
     });
-    return NextResponse.json(tutorials);
+    return NextResponse.json({ success: true, data: tutorials });
   } catch (error) {
     console.error('Error fetching host tutorials:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (!session || !session.user || session.user.role !== 'HOST') {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!session || !session.user) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
+    // Check if user is a host
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true }
+    });
+
+    if (!user || user.role !== 'HOST') {
+      return NextResponse.json({ success: false, error: 'Host privileges required' }, { status: 403 });
+    }
+
     const { title, description, imageUrl, videoUrl, tags, difficulty } = await req.json();
     const tutorial = await db.tutorial.create({
       data: {
@@ -55,9 +86,9 @@ export async function POST(req: Request) {
         hostId: session.user.id,
       },
     });
-    return NextResponse.json(tutorial, { status: 201 });
+    return NextResponse.json({ success: true, data: tutorial }, { status: 201 });
   } catch (error) {
     console.error('Error creating tutorial:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
   }
 }
