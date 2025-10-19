@@ -248,8 +248,8 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Participant Mode */}
                     <div className={`p-4 border-2 rounded-lg transition-all ${user.role === 'USER'
-                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20'
-                        : 'border-border hover:border-purple-300'
+                      ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20'
+                      : 'border-border hover:border-purple-300'
                       }`}>
                       <div className="flex items-start justify-between mb-3">
                         <div>
@@ -282,8 +282,8 @@ export default function ProfilePage() {
 
                     {/* Host Mode */}
                     <div className={`p-4 border-2 rounded-lg transition-all ${user.role === 'HOST'
-                        ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20'
-                        : 'border-border hover:border-purple-300'
+                      ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/20'
+                      : 'border-border hover:border-purple-300'
                       }`}>
                       <div className="flex items-start justify-between mb-3">
                         <div>

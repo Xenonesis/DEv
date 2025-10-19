@@ -35,3 +35,29 @@ export async function GET() {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user || session.user.role !== 'HOST') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    const { title, description, imageUrl, videoUrl, tags, difficulty } = await req.json();
+    const tutorial = await db.tutorial.create({
+      data: {
+        title,
+        description,
+        imageUrl,
+        videoUrl,
+        tags: JSON.stringify(tags),
+        difficulty,
+        hostId: session.user.id,
+      },
+    });
+    return NextResponse.json(tutorial, { status: 201 });
+  } catch (error) {
+    console.error('Error creating tutorial:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
