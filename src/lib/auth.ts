@@ -74,6 +74,12 @@ export const authOptions: AuthOptions = {
         if (dbUser) {
           token.role = dbUser.role;
         }
+      } else if (token.id) {
+        // Refresh user data from database to get latest role
+        const dbUser = await getUserByEmail(token.email as string);
+        if (dbUser) {
+          token.role = dbUser.role;
+        }
       }
       return token;
     },
