@@ -20,11 +20,6 @@ export async function GET(
             userId: true,
           },
         },
-        _count: {
-          select: {
-            participants: true,
-          },
-        },
       },
     });
 

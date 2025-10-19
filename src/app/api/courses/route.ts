@@ -13,9 +13,9 @@ export async function GET() {
             image: true,
           },
         },
-        _count: {
+        participants: {
           select: {
-            participants: true,
+            userId: true,
           },
         },
       },
