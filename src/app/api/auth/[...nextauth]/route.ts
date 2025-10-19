@@ -47,7 +47,8 @@ export const authOptions: AuthOptions = {
             id: user.id,
             email: user.email,
             name: user.name,
-            image: user.avatar
+            image: user.avatar,
+            role: user.role
           }
         } else {
           // Sign in logic
@@ -63,7 +64,8 @@ export const authOptions: AuthOptions = {
             id: user.id,
             email: user.email,
             name: user.name,
-            image: user.avatar
+            image: user.avatar,
+            role: user.role
           }
         }
       }
@@ -76,12 +78,20 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.role = user.role
+      } else if (token.id) {
+        // Refresh user data from database to get latest role
+        const dbUser = await getUserByEmail(token.email as string)
+        if (dbUser) {
+          token.role = dbUser.role
+        }
       }
       return token
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
+        session.user.role = token.role
       }
       return session
     }
