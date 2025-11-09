@@ -11,9 +11,7 @@ import {
     Users,
     Trophy,
     Clock,
-    MapPin,
     Eye,
-    Settings,
     Activity,
     BarChart3,
     Brain,
@@ -201,7 +199,7 @@ export default function HostPanel() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
-                    maxParticipants: formData.maxParticipants ? parseInt(formData.maxParticipants) : null,
+                    maxParticipants: formData.maxParticipants ? Number.parseInt(formData.maxParticipants) : null,
                     tags: formData.tags ? formData.tags.split(',').map(tag => tag.trim()) : []
                 })
             });
@@ -394,7 +392,7 @@ export default function HostPanel() {
                                         Create Hackathon
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-2xl">
+                                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                                     <DialogHeader>
                                         <DialogTitle>
                                             {editingHackathon ? 'Edit Hackathon' : 'Create New Hackathon'}
@@ -432,6 +430,7 @@ export default function HostPanel() {
                                                 value={formData.description}
                                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                                 required
+                                                rows={3}
                                             />
                                         </div>
 
@@ -506,7 +505,7 @@ export default function HostPanel() {
                                             </div>
                                         </div>
 
-                                        <div className="flex justify-end space-x-2">
+                                        <div className="flex justify-end space-x-2 pt-4">
                                             <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                                                 Cancel
                                             </Button>
@@ -526,258 +525,152 @@ export default function HostPanel() {
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Hackathons</CardTitle>
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.totalHackathons}</div>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    {/* Sidebar Navigation */}
+                    <div className="lg:col-span-1">
+                        <Card className="sticky top-24">
+                            <CardHeader>
+                                <CardTitle className="text-lg">Management Hub</CardTitle>
+                                <CardDescription>Navigate to different sections</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => router.push('/host/ai-challenges')}
+                                >
+                                    <Brain className="w-4 h-4 mr-2" />
+                                    AI Challenges
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => router.push('/host/web-contests')}
+                                >
+                                    <Code className="w-4 h-4 mr-2" />
+                                    Web Contests
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => router.push('/host/mobile-innovation')}
+                                >
+                                    <Smartphone className="w-4 h-4 mr-2" />
+                                    Mobile Innovation
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => router.push('/host/events')}
+                                >
+                                    <Calendar className="w-4 h-4 mr-2" />
+                                    Events
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => router.push('/host/conferences')}
+                                >
+                                    <Users className="w-4 h-4 mr-2" />
+                                    Conferences
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => router.push('/host/courses')}
+                                >
+                                    <BookOpen className="w-4 h-4 mr-2" />
+                                    Courses
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => router.push('/host/tutorials')}
+                                >
+                                    <Film className="w-4 h-4 mr-2" />
+                                    Tutorials
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => router.push('/host/resources')}
+                                >
+                                    <Link className="w-4 h-4 mr-2" />
+                                    Resources
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    className="w-full justify-start"
+                                    onClick={() => router.push('/host/mentorship')}
+                                >
+                                    <UserCheck className="w-4 h-4 mr-2" />
+                                    Mentorship
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Active Hackathons</CardTitle>
-                            <Activity className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.activeHackathons}</div>
-                        </CardContent>
-                    </Card>
+                    {/* Main Content */}
+                    <div className="lg:col-span-3 space-y-8">
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <Card className="hover:shadow-md transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Total Hackathons</CardTitle>
+                                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{stats.totalHackathons}</div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {stats.completedHackathons} completed
+                                    </p>
+                                </CardContent>
+                            </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Total Participants</CardTitle>
-                            <Users className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.totalParticipants}</div>
-                        </CardContent>
-                    </Card>
+                            <Card className="hover:shadow-md transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Active Hackathons</CardTitle>
+                                    <Activity className="h-4 w-4 text-green-600" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold text-green-600">{stats.activeHackathons}</div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Currently running
+                                    </p>
+                                </CardContent>
+                            </Card>
 
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-                            <Trophy className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">{stats.completedHackathons}</div>
-                        </CardContent>
-                    </Card>
-                </div>
+                            <Card className="hover:shadow-md transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Total Participants</CardTitle>
+                                    <Users className="h-4 w-4 text-muted-foreground" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold">{stats.totalParticipants}</div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Across all events
+                                    </p>
+                                </CardContent>
+                            </Card>
 
-                {/* AI Challenges Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20 border-blue-200 dark:border-blue-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-                                    <Brain className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>AI Challenges Management</CardTitle>
-                                    <CardDescription>Create and manage AI/ML competitions</CardDescription>
-                                </div>
-                            </div>
-                            <Button 
-                                onClick={() => router.push('/host/ai-challenges')}
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                            >
-                                Manage AI Challenges
-                            </Button>
+                            <Card className="hover:shadow-md transition-shadow">
+                                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                    <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
+                                    <Trophy className="h-4 w-4 text-yellow-600" />
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="text-2xl font-bold text-yellow-600">
+                                        {stats.totalHackathons > 0 ? Math.round((stats.completedHackathons / stats.totalHackathons) * 100) : 0}%
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Completion rate
+                                    </p>
+                                </CardContent>
+                            </Card>
                         </div>
-                    </CardHeader>
-                </Card>
 
-                {/* Web Contests Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg">
-                                    <Code className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>Web Contests Management</CardTitle>
-                                    <CardDescription>Create and manage web development competitions</CardDescription>
-                                </div>
-                            </div>
-                            <Button 
-                                onClick={() => router.push('/host/web-contests')}
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-                            >
-                                Manage Web Contests
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Mobile Innovation Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-950/20 dark:to-blue-950/20 border-cyan-200 dark:border-cyan-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-cyan-600 to-blue-600 rounded-lg">
-                                    <Smartphone className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>Mobile Innovation Management</CardTitle>
-                                    <CardDescription>Create and manage mobile app innovation challenges</CardDescription>
-                                </div>
-                            </div>
-                            <Button 
-                                onClick={() => router.push('/host/mobile-innovation')}
-                                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700"
-                            >
-                                Manage Mobile Innovation
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Events Management Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-200 dark:border-green-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-green-600 to-emerald-600 rounded-lg">
-                                    <Calendar className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>Events Management</CardTitle>
-                                    <CardDescription>Create and manage workshops, seminars, and networking events</CardDescription>
-                                </div>
-                            </div>
-                            <Button 
-                                onClick={() => router.push('/host/events')}
-                                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
-                            >
-                                Manage Events
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Conferences Management Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/20 dark:to-orange-950/20 border-red-200 dark:border-red-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-red-600 to-orange-600 rounded-lg">
-                                    <Users className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>Conferences Management</CardTitle>
-                                    <CardDescription>Create and manage your conferences</CardDescription>
-                                </div>
-                            </div>
-                            <Button
-                                onClick={() => router.push('/host/conferences')}
-                                className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
-                            >
-                                Manage Conferences
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Courses Management Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-green-50 to-cyan-50 dark:from-green-950/20 dark:to-cyan-950/20 border-green-200 dark:border-green-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-green-600 to-cyan-600 rounded-lg">
-                                    <BookOpen className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>Courses Management</CardTitle>
-                                    <CardDescription>Create and manage your courses</CardDescription>
-                                </div>
-                            </div>
-                            <Button
-                                onClick={() => router.push('/host/courses')}
-                                className="bg-gradient-to-r from-green-600 to-cyan-600 hover:from-green-700 hover:to-cyan-700"
-                            >
-                                Manage Courses
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Tutorials Management Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg">
-                                    <Film className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>Tutorials Management</CardTitle>
-                                    <CardDescription>Create and manage your tutorials</CardDescription>
-                                </div>
-                            </div>
-                            <Button
-                                onClick={() => router.push('/host/tutorials')}
-                                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                            >
-                                Manage Tutorials
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Resources Management Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-200 dark:border-yellow-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-yellow-600 to-orange-600 rounded-lg">
-                                    <Link className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>Resources Management</CardTitle>
-                                    <CardDescription>Create and manage your resources</CardDescription>
-                                </div>
-                            </div>
-                            <Button
-                                onClick={() => router.push('/host/resources')}
-                                className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
-                            >
-                                Manage Resources
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Mentorships Management Quick Access */}
-                <Card className="mb-8 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20 border-pink-200 dark:border-pink-800">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-r from-pink-600 to-rose-600 rounded-lg">
-                                    <UserCheck className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <CardTitle>Mentorships Management</CardTitle>
-                                    <CardDescription>Manage your mentorships</CardDescription>
-                                </div>
-                            </div>
-                            <Button
-                                onClick={() => router.push('/host/mentorship')}
-                                className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700"
-                            >
-                                Manage Mentorships
-                            </Button>
-                        </div>
-                    </CardHeader>
-                </Card>
-
-                {/* Hackathons Table */}
-                <Card>
+                        {/* Hackathons Management */}
+                        <Card>
                     <CardHeader className="space-y-4">
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div>
@@ -1037,52 +930,54 @@ export default function HostPanel() {
                     </CardContent>
                 </Card>
             </div>
+                </div>
 
-            {/* Participants Dialog */}
-            <Dialog open={!!viewingParticipants} onOpenChange={() => setViewingParticipants(null)}>
-                <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                        <DialogTitle>Participants - {viewingParticipants?.title}</DialogTitle>
-                        <DialogDescription>
-                            {viewingParticipants?.participantCount || 0} participant(s) registered
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="max-h-[400px] overflow-y-auto">
-                        {viewingParticipants?.participants && viewingParticipants.participants.length > 0 ? (
-                            <div className="space-y-3">
-                                {viewingParticipants.participants.map((participant) => (
-                                    <div
-                                        key={participant.id}
-                                        className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center text-purple-600 dark:text-purple-400 font-semibold">
-                                                {participant.user.name?.charAt(0).toUpperCase() || 'U'}
+                {/* Participants Dialog */}
+                <Dialog open={!!viewingParticipants} onOpenChange={() => setViewingParticipants(null)}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Participants - {viewingParticipants?.title}</DialogTitle>
+                            <DialogDescription>
+                                {viewingParticipants?.participantCount || 0} participant(s) registered
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="max-h-[400px] overflow-y-auto">
+                            {viewingParticipants?.participants && viewingParticipants.participants.length > 0 ? (
+                                <div className="space-y-3">
+                                    {viewingParticipants.participants.map((participant) => (
+                                        <div
+                                            key={participant.id}
+                                            className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent transition-colors"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center text-purple-600 dark:text-purple-400 font-semibold">
+                                                    {participant.user.name?.charAt(0).toUpperCase() || 'U'}
+                                                </div>
+                                                <div>
+                                                    <p className="font-semibold">{participant.user.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{participant.user.email}</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <p className="font-semibold">{participant.user.name}</p>
-                                                <p className="text-sm text-muted-foreground">{participant.user.email}</p>
+                                            <div className="text-right">
+                                                <p className="text-xs text-muted-foreground">Registered</p>
+                                                <p className="text-sm">
+                                                    {new Date(participant.registeredAt).toLocaleDateString()}
+                                                </p>
                                             </div>
                                         </div>
-                                        <div className="text-right">
-                                            <p className="text-xs text-muted-foreground">Registered</p>
-                                            <p className="text-sm">
-                                                {new Date(participant.registeredAt).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="text-center py-12 text-muted-foreground">
-                                <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                                <p>No participants yet</p>
-                                <p className="text-sm">Be patient, registrations will come!</p>
-                            </div>
-                        )}
-                    </div>
-                </DialogContent>
-            </Dialog>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-muted-foreground">
+                                    <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                                    <p>No participants yet</p>
+                                    <p className="text-sm">Be patient, registrations will come!</p>
+                                </div>
+                            )}
+                        </div>
+                    </DialogContent>
+                </Dialog>
+            </div>
         </div>
     );
 }
